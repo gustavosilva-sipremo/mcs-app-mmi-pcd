@@ -1,30 +1,26 @@
-import { Audio } from "expo-av";
+import { Ionicons } from "@expo/vector-icons"; // Ícones nativos
+import { useAudioPlayer } from "expo-audio"; // Nova biblioteca SDK 54+
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { themeStyles as styles } from "./styles/styles";
+
+import { globalStyles as g } from "../styles/globalStyles";
+import { testsStyles as s } from "../styles/testsStyles";
 
 export default function TestsScreen() {
   const router = useRouter();
   const [isFlashOn, setIsFlashOn] = useState(false);
-  const [sound, setSound] = useState<Audio.Sound | null>(null);
 
-  // Hook para gerenciar permissões de câmera de forma moderna
+  // Hook moderno do expo-audio. Ele gerencia o carregamento automaticamente.
+  const audioSource = require("../assets/sounds/luva.mp3");
+  const player = useAudioPlayer(audioSource);
+
   const [permission, requestPermission] = useCameraPermissions();
 
-  // Cleanup: Descarrega o som da memória quando o componente é desmontado
-  useEffect(() => {
-    return () => {
-      if (sound) {
-        sound.unloadAsync();
-      }
-    };
-  }, [sound]);
-
-  // 📳 Feedback tátil para PCD (Deficiência Visual/Auditiva)
+  // 📳 Feedback tátil
   const handleVibration = async (type: "success" | "error") => {
     const feedback =
       type === "success"
@@ -33,39 +29,24 @@ export default function TestsScreen() {
     await Haptics.notificationAsync(feedback);
   };
 
-  // 🔊 Alerta sonoro usando arquivo local luva.mp3
-  const playTestSound = async () => {
+  // 🔊 Reprodução de áudio com a nova API
+  const playTestSound = () => {
     try {
-      // Se já houver um som carregado, para e descarrega antes de tocar novamente
-      if (sound) {
-        await sound.stopAsync();
-        await sound.unloadAsync();
+      if (player.playing) {
+        player.seekTo(0); // Reinicia se já estiver tocando
       }
-
-      const { sound: newSound } = await Audio.Sound.createAsync(
-        require("../assets/sounds/luva.mp3"), // Caminho para seu arquivo local
-      );
-
-      setSound(newSound);
-      await newSound.playAsync();
+      player.play();
     } catch (error) {
-      console.error(error);
-      Alert.alert(
-        "Erro de Áudio",
-        "Não foi possível carregar o arquivo 'luva.mp3'. Verifique se ele está na pasta assets/sounds.",
-      );
+      Alert.alert("Erro de Áudio", "Não foi possível reproduzir o som.");
     }
   };
 
-  // 💡 Alerta visual via Flash (Deficiência Auditiva)
+  // 💡 Controle do Flash
   const toggleFlash = async () => {
     if (!permission?.granted) {
       const result = await requestPermission();
       if (!result.granted) {
-        Alert.alert(
-          "Permissão necessária",
-          "O acesso à câmera é obrigatório para ativar o flash como sinalizador visual.",
-        );
+        Alert.alert("Permissão necessária", "Acesso à câmera negado.");
         return;
       }
     }
@@ -73,81 +54,71 @@ export default function TestsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
-        {/* Efeito visual de fundo */}
-        <View style={styles.glow} />
+    <SafeAreaView style={g.container}>
+      <ScrollView contentContainerStyle={g.content}>
+        <View style={g.glow} />
 
-        <View style={styles.card}>
-          <Text style={styles.title}>
-            Painel de <Text style={styles.highlight}>Hardware</Text>
+        <View style={g.card}>
+          <Text style={s.title}>
+            Painel de <Text style={g.highlight}>Hardware</Text>
           </Text>
 
-          <View style={styles.testGrid}>
-            {/* VIBRAÇÃO SUCESSO */}
+          <View style={s.testGrid}>
             <TouchableOpacity
-              style={[styles.button, { backgroundColor: "#10b981" }]}
+              style={[g.button, s.btnSuccess]}
               activeOpacity={0.7}
               onPress={() => handleVibration("success")}
             >
-              <Text style={styles.buttonText}>📳 Vibração Sucesso</Text>
+              <Text style={g.buttonText}>📳 Vibração Sucesso</Text>
             </TouchableOpacity>
 
-            {/* VIBRAÇÃO ERRO */}
             <TouchableOpacity
-              style={[styles.button, { backgroundColor: "#ef4444" }]}
+              style={[g.button, s.btnError]}
               activeOpacity={0.7}
               onPress={() => handleVibration("error")}
             >
-              <Text style={styles.buttonText}>📳 Vibração Erro</Text>
+              <Text style={g.buttonText}>📳 Vibração Erro</Text>
             </TouchableOpacity>
 
-            {/* TESTE DE SOM LOCAL */}
             <TouchableOpacity
-              style={[styles.button, { backgroundColor: "#6366f1" }]}
+              style={[g.button, s.btnAudio]}
               activeOpacity={0.7}
               onPress={playTestSound}
             >
-              <Text style={styles.buttonText}>🔊 Ouvir "Luva.mp3"</Text>
+              <Text style={g.buttonText}>🔊 Ouvir "Luva.mp3"</Text>
             </TouchableOpacity>
 
-            {/* TESTE DE FLASH */}
             <TouchableOpacity
               style={[
-                styles.button,
-                isFlashOn
-                  ? { backgroundColor: "#f59e0b" }
-                  : styles.buttonSecondary,
+                g.button,
+                isFlashOn ? s.btnFlashActive : s.buttonSecondary,
               ]}
               activeOpacity={0.7}
               onPress={toggleFlash}
             >
-              <Text
-                style={[
-                  styles.buttonText,
-                  !isFlashOn && styles.buttonTextSecondary,
-                ]}
-              >
+              <Text style={[g.buttonText, !isFlashOn && s.buttonTextSecondary]}>
                 {isFlashOn ? "🔦 Desligar Flash" : "💡 Testar Flash (Visual)"}
               </Text>
             </TouchableOpacity>
 
-            {/* BOTÃO VOLTAR */}
+            {/* BOTÃO VOLTAR COM ÍCONE */}
             <TouchableOpacity
-              style={[styles.button, styles.buttonSecondary, { marginTop: 20 }]}
+              style={[
+                g.button,
+                s.buttonSecondary,
+                { marginTop: 20, flexDirection: "row", gap: 8 },
+              ]}
               activeOpacity={0.7}
               onPress={() => router.back()}
             >
-              <Text style={[styles.buttonText, styles.buttonTextSecondary]}>
+              <Ionicons name="home-outline" size={20} color="#475569" />
+              <Text style={[g.buttonText, s.buttonTextSecondary]}>
                 Voltar para Home
               </Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* Componente de Câmera invisível para controle do hardware.
-            No iOS/Android, o torch (lanterna) só funciona se uma instância da câmera existir.
-        */}
         {isFlashOn && (
           <CameraView
             style={{ position: "absolute", width: 1, height: 1, opacity: 0 }}

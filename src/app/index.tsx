@@ -1,130 +1,75 @@
-import {
-    Dimensions,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from "react-native";
+import { useRouter } from "expo-router";
+import { useEffect, useRef } from "react";
+import { Animated, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-const { width } = Dimensions.get("window");
+import { themeStyles as styles } from "./styles/styles";
 
 export default function Index() {
+  const router = useRouter();
+
+  // Efeito suave de entrada (opcional, mas deixa elegante)
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 1000,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        {/* Círculo de Brilho Decorativo (Opcional) */}
+        {/* O Glow no tema light age como uma mancha de cor suave ao fundo */}
         <View style={styles.glow} />
 
-        <View style={styles.card}>
+        <Animated.View style={[styles.card, { opacity: fadeAnim }]}>
           <View style={styles.badge}>
-            <Text style={styles.badgeText}>SISTEMA NATIVO</Text>
+            <Text style={styles.badgeText}>Acessibilidade Inclusiva</Text>
           </View>
 
           <Text style={styles.title}>
-            React <Text style={styles.highlight}>Native</Text>
+            Hardware <Text style={styles.highlight}>Testing</Text>
           </Text>
 
           <Text style={styles.description}>
-            Desenvolvendo com StyleSheet padrão. Estabilidade, performance e
-            controle total sobre a interface.
+            Valide feedbacks táteis, visuais e sonoros para garantir que seu app
+            seja
+            <Text style={{ fontWeight: "bold", color: "#334155" }}>
+              {" "}
+              acessível a todos.
+            </Text>
           </Text>
 
-          <TouchableOpacity style={styles.button} activeOpacity={0.8}>
-            <Text style={styles.buttonText}>Começar Agora</Text>
+          <TouchableOpacity
+            style={styles.button}
+            activeOpacity={0.7}
+            onPress={() => router.push("/tests")}
+          >
+            <Text style={styles.buttonText}>Iniciar Laboratório</Text>
           </TouchableOpacity>
-        </View>
 
-        <Text style={styles.footer}>Expo SDK 54 • TypeScript</Text>
+          <TouchableOpacity
+            style={[styles.button, styles.buttonSecondary]}
+            activeOpacity={0.7}
+            onPress={() => {
+              /* Link para documentação ou ajuda */
+            }}
+          >
+            <Text style={[styles.buttonText, styles.buttonTextSecondary]}>
+              Ver Documentação
+            </Text>
+          </TouchableOpacity>
+        </Animated.View>
+
+        <View style={{ alignItems: "center" }}>
+          <Text style={styles.footer}>Versão 1.0.0</Text>
+          <Text style={[styles.footer, { marginTop: 4 }]}>
+            Expo SDK 54 • TypeScript
+          </Text>
+        </View>
       </View>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#020617", // Slate 950
-  },
-  content: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 24,
-  },
-  glow: {
-    position: "absolute",
-    top: -100,
-    width: width * 0.8,
-    height: width * 0.8,
-    backgroundColor: "#0ea5e9",
-    borderRadius: width,
-    opacity: 0.1,
-    filter: "blur(50px)", // Nota: Funciona melhor no iOS/Web, omitido no Android antigo
-  },
-  card: {
-    width: "100%",
-    backgroundColor: "#0f172a", // Slate 900
-    borderRadius: 32,
-    padding: 32,
-    borderWidth: 1,
-    borderColor: "#1e293b", // Slate 800
-    alignItems: "center",
-    elevation: 10, // Sombra Android
-    shadowColor: "#000", // Sombra iOS
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-  },
-  badge: {
-    backgroundColor: "rgba(16, 185, 129, 0.1)",
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 100,
-    borderWidth: 1,
-    borderColor: "rgba(16, 185, 129, 0.2)",
-    marginBottom: 16,
-  },
-  badgeText: {
-    color: "#10b981", // Emerald 500
-    fontSize: 10,
-    fontWeight: "800",
-    letterSpacing: 1,
-  },
-  title: {
-    color: "#ffffff",
-    fontSize: 32,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 16,
-  },
-  highlight: {
-    color: "#0ea5e9", // Sky 500
-  },
-  description: {
-    color: "#94a3b8", // Slate 400
-    textAlign: "center",
-    lineHeight: 22,
-    fontSize: 15,
-    marginBottom: 32,
-  },
-  button: {
-    backgroundColor: "#0ea5e9",
-    width: "100%",
-    height: 56,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  buttonText: {
-    color: "#ffffff",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  footer: {
-    marginTop: 24,
-    color: "#475569",
-    fontSize: 12,
-    fontWeight: "500",
-  },
-});

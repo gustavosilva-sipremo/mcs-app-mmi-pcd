@@ -2,19 +2,21 @@ import { Dimensions, Platform, StyleSheet } from "react-native";
 
 export const { width, height } = Dimensions.get("window");
 
-// Design Tokens - Facilita mudar o tema do app todo de uma vez
 export const Colors = {
-  primary: "#0F172A", // Slate 900
-  secondary: "#64748B", // Slate 500
-  accent: "#0284c7", // Sky 600
-  background: "#F8FAFC", // Slate 50
+  primary: "#0F172A",
+  secondary: "#475569",
+  accent: "#0284C7",
+  background: "#F8FAFC",
   card: "#FFFFFF",
-  border: "#F1F5F9",
-  glow: "#bae6fd",
+  border: "#CBD5E1",
+  glow: "#BAE6FD",
 
-  // Cores de suporte (usadas nos botões secundários)
+  danger: "#B91C1C",
+  success: "#065F46",
+  warning: "#92400E",
+
   muted: "#F1F5F9",
-  textMuted: "#475569",
+  textMuted: "#334155",
 };
 
 export const globalStyles = StyleSheet.create({
@@ -22,89 +24,80 @@ export const globalStyles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
-  content: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 24,
-  },
-  // Efeito visual de fundo
+  // ADICIONADO: Estilo Glow para o fundo dos cards
   glow: {
     position: "absolute",
-    top: -width * 0.4,
+    top: -width * 0.4, // Posiciona metade para fora
     right: -width * 0.2,
     width: width,
     height: width,
     backgroundColor: Colors.glow,
     borderRadius: width / 2,
-    opacity: 0.5,
-    // Blur no Android é limitado, mas no iOS fica perfeito
-    ...(Platform.OS === "ios"
-      ? { shadowColor: Colors.glow, shadowRadius: 50, shadowOpacity: 1 }
-      : {}),
+    opacity: 0.4,
+    // Efeito de desfoque (Blur) nativo
+    ...Platform.select({
+      ios: {
+        shadowColor: Colors.glow,
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 1,
+        shadowRadius: 60,
+      },
+      android: {
+        elevation: 0, // Android não suporta shadowRadius alto, opacidade basta
+      },
+    }),
+  },
+  titleLarge: {
+    fontSize: 32,
+    fontWeight: "900",
+    color: Colors.primary,
+    letterSpacing: -1,
   },
   card: {
     width: "100%",
     backgroundColor: Colors.card,
-    borderRadius: 32,
-    padding: 32,
+    borderRadius: 24,
+    padding: 24,
     alignItems: "center",
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: Colors.border,
-    // Sombras suaves
     ...Platform.select({
       ios: {
-        shadowColor: "#64748b",
-        shadowOffset: { width: 0, height: 12 },
-        shadowOpacity: 0.08,
-        shadowRadius: 24,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.1,
+        shadowRadius: 15,
       },
-      android: {
-        elevation: 6,
-      },
+      android: { elevation: 4 },
     }),
   },
-  // Botão Principal (Primário)
   button: {
     backgroundColor: Colors.primary,
     width: "100%",
-    height: 60,
+    height: 68,
     borderRadius: 18,
-    flexDirection: "row", // Preparado para ícones
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 10,
-    ...Platform.select({
-      ios: {
-        shadowColor: Colors.primary,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 4,
-      },
-    }),
+    gap: 12,
   },
   buttonText: {
     color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "700",
-    letterSpacing: 0.3,
+    fontSize: 18,
+    fontWeight: "800",
+    letterSpacing: 0.5,
   },
-  // VARIANTES GLOBAIS - Resolve o erro de TS
   buttonSecondary: {
-    backgroundColor: Colors.muted,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    elevation: 0,
-    shadowOpacity: 0,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 2,
+    borderColor: Colors.border,
   },
   buttonTextSecondary: {
-    color: Colors.textMuted,
+    color: Colors.primary,
+    fontWeight: "700",
   },
   highlight: {
     color: Colors.accent,
-    fontWeight: "800",
+    fontWeight: "900",
   },
 });

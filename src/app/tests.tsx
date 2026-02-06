@@ -2,6 +2,7 @@ import { useAudioPlayer } from "expo-audio";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
+import * as Speech from "expo-speech"; // Adicionado para teste de acessibilidade
 import React, { useState } from "react";
 import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 
@@ -28,13 +29,27 @@ export default function TestsScreen() {
     await Haptics.notificationAsync(feedback);
   };
 
+  // 🗣️ Teste de Voz (PCD)
+  const testSpeech = () => {
+    const message =
+      "Teste de sintetizador de voz. Sistema de áudio da mineradora operando normalmente.";
+    Speech.speak(message, {
+      language: "pt-BR",
+      rate: 0.9,
+      pitch: 1.0,
+    });
+  };
+
   // 🔊 Som de teste
   const playTestSound = () => {
     try {
       if (player.playing) player.seekTo(0);
       player.play();
     } catch (error) {
-      Alert.alert("Erro de Áudio", "Não foi possível reproduzir o som.");
+      Alert.alert(
+        "Erro de Áudio",
+        "Não foi possível reproduzir o som de alerta.",
+      );
     }
   };
 
@@ -45,14 +60,13 @@ export default function TestsScreen() {
       if (!granted) {
         Alert.alert(
           "Permissão necessária",
-          "Precisamos de acesso à câmera para usar o flash.",
+          "O acesso à câmera é obrigatório para o flash.",
         );
         return;
       }
     }
     setIsFlashOn(!isFlashOn);
-    // Adiciona um haptic ao ligar/desligar a lanterna
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
   };
 
   return (
@@ -66,12 +80,19 @@ export default function TestsScreen() {
             Painel de <Text style={g.highlight}>Hardware</Text>
           </Text>
 
+          <Text
+            style={[s.description, { marginBottom: 20, textAlign: "center" }]}
+          >
+            Valide os componentes críticos de pânico e acessibilidade.
+          </Text>
+
           <View style={s.testGrid}>
             <Button
               title="Vibração Sucesso"
               icon="checkmark-circle-outline"
               variantStyle={s.btnSuccess}
               onPress={() => handleVibration("success")}
+              accessibilityLabel="Testar vibração de sucesso"
             />
 
             <Button
@@ -79,37 +100,44 @@ export default function TestsScreen() {
               icon="close-circle-outline"
               variantStyle={s.btnError}
               onPress={() => handleVibration("error")}
+              accessibilityLabel="Testar vibração de erro"
             />
 
             <Button
-              title="Ouvir Áudio"
+              title="Testar Voz (TTS)"
+              icon="chatbubble-ellipses-outline"
+              variantStyle={{ backgroundColor: "#8B5CF6" }} // Roxo para distinguir
+              onPress={testSpeech}
+              accessibilityLabel="Testar síntese de voz para deficientes visuais"
+            />
+
+            <Button
+              title="Ouvir Alarme"
               icon="volume-high-outline"
               variantStyle={s.btnAudio}
               onPress={playTestSound}
             />
 
             <Button
-              title={isFlashOn ? "Desligar Lanterna" : "Testar Flash"}
+              title={isFlashOn ? "Desligar Flash" : "Testar Flash"}
               icon={isFlashOn ? "flashlight" : "flashlight-outline"}
               variantStyle={isFlashOn ? s.btnFlashActive : g.buttonSecondary}
               textStyle={!isFlashOn ? g.buttonTextSecondary : { color: "#FFF" }}
               onPress={toggleFlash}
             />
 
+            <View style={styles.divider} />
+
             <Button
               title="Voltar para Home"
               icon="home-outline"
-              variantStyle={[g.buttonSecondary, { marginTop: 8 }]}
+              variantStyle={g.buttonSecondary}
               textStyle={g.buttonTextSecondary}
               onPress={() => router.back()}
             />
           </View>
         </Card>
 
-        {/* CÂMERA INVISÍVEL: 
-          Necessária para acessar o hardware do Flash (enableTorch).
-          Mantemos 1x1 pixel e opacity 0 para não interferir no visual.
-        */}
         {permission?.granted && (
           <CameraView
             style={styles.hiddenCamera}
@@ -133,5 +161,11 @@ const styles = StyleSheet.create({
     width: 1,
     height: 1,
     opacity: 0,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "#E2E8F0",
+    width: "100%",
+    marginVertical: 10,
   },
 });

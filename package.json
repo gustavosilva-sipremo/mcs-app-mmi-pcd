@@ -1,18 +1,36 @@
 {
-  "name": "my-app",
+  "name": "mmi-mineradora-emergency",
+  "version": "1.2.0",
+  "description": "Sistema de gestão de protocolos de emergência e validação de hardware.",
+  "author": "MMI Engineering",
   "main": "expo-router/entry",
-  "version": "1.0.0",
+  "homepage": "https://mmi.mineradora.com.br",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/seu-repo/mmi-mineradora.git"
+  },
+  "keywords": [
+    "emergency",
+    "mining",
+    "hardware-validation",
+    "accessibility",
+    "safety"
+  ],
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web"
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web",
+    "lint": "eslint .",
+    "build:android": "eas build --platform android",
+    "build:ios": "eas build --platform ios"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
     "@react-navigation/native": "^7.1.8",
     "expo": "~54.0.33",
     "expo-audio": "~1.1.1",
+    "expo-battery": "~10.0.8",
     "expo-camera": "~17.0.10",
     "expo-constants": "~18.0.13",
     "expo-font": "~14.0.11",
@@ -20,6 +38,7 @@
     "expo-linking": "~8.0.11",
     "expo-notifications": "~0.32.16",
     "expo-router": "~6.0.23",
+    "expo-speech": "~14.0.8",
     "expo-splash-screen": "~31.0.13",
     "expo-status-bar": "~3.0.9",
     "expo-web-browser": "~15.0.10",

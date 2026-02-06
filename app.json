@@ -2,7 +2,10 @@
   "expo": {
     "name": "MMI Mineradora",
     "slug": "mmi-mineradora",
-    "version": "1.0.0",
+    "version": "1.2.0",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "orientation": "portrait",
     "icon": "./src/assets/images/icon.png",
     "scheme": "mmi-mineradora",
@@ -14,32 +17,40 @@
       "backgroundColor": "#F8FAFC"
     },
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.mmi.mineradora",
+      "supportsTablet": false,
+      "bundleIdentifier": "com.mmi.mineradora.emergencia",
+      "config": {
+        "usesNonExemptEncryption": false
+      },
       "infoPlist": {
-        "UIBackgroundModes": ["audio"]
+        "UIBackgroundModes": ["audio"],
+        "NSCameraUsageDescription": "O app utiliza o flash da câmera para sinalização visual de emergência e iluminação em áreas de baixa visibilidade (subsolo).",
+        "NSMicrophoneUsageDescription": "Necessário para processamento de áudio durante protocolos de pânico."
       }
     },
     "android": {
-      "package": "com.mmi.mineradora",
+      "package": "com.mmi.mineradora.emergencia",
       "adaptiveIcon": {
         "foregroundImage": "./src/assets/images/adaptive-icon.png",
         "backgroundColor": "#F8FAFC"
       },
-      "permissions": ["CAMERA", "VIBRATE"],
+      "permissions": [
+        "CAMERA",
+        "VIBRATE",
+        "BATTERY_STATS",
+        "WAKE_LOCK",
+        "FOREGROUND_SERVICE",
+        "MODIFY_AUDIO_SETTINGS"
+      ],
       "edgeToEdgeEnabled": true
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./src/assets/images/favicon.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-camera",
         {
-          "cameraPermission": "O app precisa acessar a câmera para utilizar o flash em alertas de emergência."
+          "cameraPermission": "Acesso ao flash para protocolos de evacuação e iluminação operacional.",
+          "microphonePermission": false
         }
       ],
       [
@@ -51,6 +62,11 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "seu-id-aqui"
+      }
     }
   }
 }

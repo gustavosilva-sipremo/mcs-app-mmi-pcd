@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics"; // Adicionado para feedback tátil em todos os botões
 import React from "react";
 import {
   StyleSheet,
@@ -16,6 +17,7 @@ interface ButtonProps extends TouchableOpacityProps {
   icon?: keyof typeof Ionicons.glyphMap;
   variantStyle?: ViewStyle | ViewStyle[];
   textStyle?: TextStyle | TextStyle[];
+  hapticType?: Haptics.ImpactFeedbackStyle; // Permite personalizar a vibração do clique
 }
 
 export const Button = ({
@@ -23,27 +25,39 @@ export const Button = ({
   icon,
   variantStyle,
   textStyle,
+  hapticType = Haptics.ImpactFeedbackStyle.Light,
+  onPress,
   ...props
 }: ButtonProps) => {
-  // Extrai a cor do texto para aplicar ao ícone automaticamente
   const flatTextStyle = StyleSheet.flatten(textStyle);
   const iconColor = flatTextStyle?.color || "#FFFFFF";
 
+  const handlePress = (event: any) => {
+    // PCD: Feedback tátil em cada interação confirma para o usuário que o botão foi acionado
+    Haptics.impactAsync(hapticType);
+    if (onPress) onPress(event);
+  };
+
   return (
     <TouchableOpacity
-      // Unimos o estilo global com os específicos, garantindo que width: '100%' prevaleça
       style={[g.button, styles.base, variantStyle]}
-      activeOpacity={0.7}
+      activeOpacity={0.8}
+      onPress={handlePress}
+      // ACESSIBILIDADE (PCD):
       accessibilityRole="button"
-      accessibilityLabel={props.accessibilityLabel || title}
+      accessibilityLabel={props.accessibilityLabel || `Botão: ${title}`}
+      accessibilityHint={
+        props.accessibilityHint || "Toque duas vezes para ativar"
+      }
       {...props}
     >
       <View style={styles.content}>
         {icon && (
           <Ionicons
             name={icon}
-            size={22} // Aumentado levemente para melhor visibilidade
+            size={24}
             color={iconColor as string}
+            importantForAccessibility="no-hide-descendants" // Ícone é decorativo, o texto já explica
           />
         )}
         <Text style={[g.buttonText, textStyle]}>{title}</Text>
@@ -54,8 +68,8 @@ export const Button = ({
 
 const styles = StyleSheet.create({
   base: {
-    width: "100%", // Força a ocupação total do container pai (Card)
-    minHeight: 60, // Garante uma área de toque confortável (PCD)
+    width: "100%",
+    minHeight: 64, // Mínimo de 48dp é o exigido pelo Google, 64 é ideal para luvas/trabalho
     justifyContent: "center",
     alignItems: "center",
   },
@@ -63,7 +77,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 10, // Espaçamento consistente entre ícone e texto
-    paddingHorizontal: 16,
+    gap: 12,
   },
 });

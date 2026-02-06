@@ -1,8 +1,9 @@
-import { Ionicons } from "@expo/vector-icons"; // Usando ícone vetorial
+import { Ionicons } from "@expo/vector-icons";
 import { useAudioPlayer } from "expo-audio";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
+import * as Speech from "expo-speech"; // Adicionado para PCD
 import React, { useEffect, useRef, useState } from "react";
 import { Animated, Modal, StyleSheet, Text, View } from "react-native";
 import { Button } from "../components/ui/Button";
@@ -23,12 +24,10 @@ export default function AlertScreen() {
       clearInterval(alertInterval.current);
       alertInterval.current = null;
     }
-
-    // Proteção contra o erro "Already Released"
+    Speech.stop(); // Interrompe a fala se o usuário sair
     try {
-      if (player && typeof player.pause === "function") {
+      if (player) {
         player.pause();
-        player.seekTo(0);
       }
     } catch (e) {
       console.log("Audio release safe catch");
@@ -40,17 +39,17 @@ export default function AlertScreen() {
     player.loop = true;
     player.play();
 
-    // Loop de Hardware (Vibração Contínua + Flash)
+    // Loop de Hardware: Flash + Vibração Intensa
     alertInterval.current = setInterval(() => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       setFlash((prev) => !prev);
     }, 400);
 
-    // Animação 1: Pulsar conteúdo central
+    // Animação de Pulso (Foco Visual)
     Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
-          toValue: 1.2,
+          toValue: 1.15,
           duration: 300,
           useNativeDriver: true,
         }),
@@ -62,11 +61,11 @@ export default function AlertScreen() {
       ]),
     ).start();
 
-    // Animação 2: Overlay de Scanline (Efeito visual gritante)
+    // Efeito Scanline (Interferência)
     Animated.loop(
       Animated.timing(overlayAnim, {
         toValue: 1,
-        duration: 2000,
+        duration: 2500,
         useNativeDriver: true,
       }),
     ).start();
@@ -74,9 +73,14 @@ export default function AlertScreen() {
     return () => stopHardwareActions();
   }, []);
 
-  const handleStopEmergency = () => {
+  const handleOpenProtocol = () => {
     stopHardwareActions();
     setIsModalVisible(true);
+
+    // PCD: Inicia leitura automática do protocolo de emergência
+    const message =
+      "Atenção. Protocolo de evacuação ativado. Local: Setor de Britagem Norte. Motivo: Instabilidade de Talude. Dirija-se imediatamente ao Ponto de Encontro B.";
+    Speech.speak(message, { language: "pt-BR", rate: 0.9 });
   };
 
   return (
@@ -86,7 +90,6 @@ export default function AlertScreen() {
         { backgroundColor: flash ? "#D92D20" : "#000" },
       ]}
     >
-      {/* Camada de Interferência Visual */}
       <Animated.View
         style={[
           styles.scanline,
@@ -106,13 +109,11 @@ export default function AlertScreen() {
           zIndex: 10,
         }}
       >
-        <View style={styles.alertIconContainer}>
-          <Ionicons name="warning" size={100} color="#FFF" />
-        </View>
-        <Text style={styles.alertSubtitle}>PROTOCOLO DE CRÍTICO</Text>
+        <Ionicons name="warning" size={120} color="#FFF" />
+        <Text style={styles.alertSubtitle}>PROTOCOLO CRÍTICO</Text>
         <Text style={styles.alertTitle}>EVACUAÇÃO</Text>
         <View style={styles.dangerBadge}>
-          <Text style={styles.dangerText}>RISCO NÍVEL 03</Text>
+          <Text style={styles.dangerText}>CONTRASTE MÁXIMO ATIVADO</Text>
         </View>
       </Animated.View>
 
@@ -120,22 +121,22 @@ export default function AlertScreen() {
         <Button
           title="ABRIR PROTOCOLO"
           icon="shield-checkmark"
-          onPress={handleStopEmergency}
+          onPress={handleOpenProtocol}
           variantStyle={styles.mainButton}
-          textStyle={{ color: "#000", fontWeight: "900" }}
+          textStyle={{ color: "#000", fontWeight: "900", fontSize: 18 }}
+          accessibilityLabel="Abrir instruções de protocolo e rota de fuga"
         />
       </View>
 
-      {/* Modal Reestilizado */}
-      <Modal visible={isModalVisible} animationType="fade" transparent={true}>
+      <Modal visible={isModalVisible} animationType="slide" transparent={true}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Ionicons name="business" size={24} color="#ef4444" />
+              <Ionicons name="business" size={28} color="#D92D20" />
               <Text style={styles.modalTitle}>MMI MINERADORA</Text>
             </View>
 
-            <Text style={styles.modalSub}>Relatório de Incidente Gerado</Text>
+            <Text style={styles.modalSub}>Instruções de Emergência</Text>
             <View style={styles.divider} />
 
             <View style={styles.infoRow}>
@@ -152,12 +153,17 @@ export default function AlertScreen() {
                 },
                 { label: "Rota", val: "Ponto de Encontro B", icon: "walk" },
               ].map((item, i) => (
-                <View key={i} style={styles.infoItem}>
+                <View
+                  key={i}
+                  style={styles.infoItem}
+                  accessible={true}
+                  accessibilityLabel={`${item.label}: ${item.val}`}
+                >
                   <Ionicons
                     name={item.icon as any}
-                    size={20}
-                    color="#ef4444"
-                    style={{ marginRight: 10 }}
+                    size={22}
+                    color="#D92D20"
+                    style={{ marginRight: 12 }}
                   />
                   <Text style={styles.infoText}>
                     <Text style={styles.bold}>{item.label}:</Text> {item.val}
@@ -167,9 +173,22 @@ export default function AlertScreen() {
             </View>
 
             <Button
-              title="ENCERRAR SIMULAÇÃO"
-              icon="exit"
-              variantStyle={{ marginTop: 24, backgroundColor: "#1e293b" }}
+              title="OUVIR NOVAMENTE"
+              icon="volume-high"
+              variantStyle={{ marginTop: 20, backgroundColor: "#f1f5f9" }}
+              textStyle={{ color: "#334155" }}
+              onPress={() =>
+                Speech.speak(
+                  "Local: Britagem Norte. Motivo: Instabilidade. Rota: Ponto de Encontro B.",
+                  { language: "pt-BR" },
+                )
+              }
+            />
+
+            <Button
+              title="ENCERRAR ALERTA"
+              icon="log-out"
+              variantStyle={{ marginTop: 12, backgroundColor: "#1e293b" }}
               onPress={() => {
                 setIsModalVisible(false);
                 router.replace("/");
@@ -200,44 +219,37 @@ const styles = StyleSheet.create({
   scanline: {
     position: "absolute",
     width: "100%",
-    height: 100,
-    backgroundColor: "rgba(255,255,255,0.1)",
+    height: 120,
+    backgroundColor: "rgba(255,255,255,0.15)",
     zIndex: 5,
-  },
-  alertIconContainer: {
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 20,
-    marginBottom: 10,
   },
   alertSubtitle: {
     color: "#FFF",
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "700",
     letterSpacing: 4,
-    opacity: 0.9,
+    marginTop: 20,
   },
   alertTitle: {
     color: "#fff",
-    fontSize: 52,
+    fontSize: 58,
     fontWeight: "900",
     textAlign: "center",
-    lineHeight: 55,
+    lineHeight: 60,
   },
   dangerBadge: {
     backgroundColor: "#000",
     paddingHorizontal: 16,
-    paddingVertical: 6,
-    marginTop: 15,
+    paddingVertical: 8,
+    marginTop: 20,
     borderRadius: 4,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: "#FFF",
   },
   dangerText: {
     color: "#FFF",
     fontWeight: "900",
-    fontSize: 14,
+    fontSize: 12,
     letterSpacing: 1,
   },
   bottomContainer: {
@@ -247,38 +259,45 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     zIndex: 11,
   },
-  mainButton: { backgroundColor: "#FFF", height: 70, borderRadius: 12 },
-
+  mainButton: { backgroundColor: "#FFF", height: 75, borderRadius: 16 },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.92)",
+    backgroundColor: "rgba(0,0,0,0.95)",
     justifyContent: "center",
-    padding: 24,
+    padding: 20,
   },
-  modalContent: { backgroundColor: "#fff", borderRadius: 20, padding: 24 },
+  modalContent: {
+    backgroundColor: "#fff",
+    borderRadius: 28,
+    padding: 24,
+    elevation: 20,
+  },
   modalHeader: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
-    marginBottom: 5,
+    gap: 12,
+    marginBottom: 8,
   },
-  modalTitle: { fontSize: 22, fontWeight: "900", color: "#1e293b" },
+  modalTitle: { fontSize: 24, fontWeight: "900", color: "#0f172a" },
   modalSub: {
-    fontSize: 13,
+    fontSize: 14,
     color: "#64748b",
-    fontWeight: "600",
+    fontWeight: "700",
     textTransform: "uppercase",
+    letterSpacing: 1,
   },
-  divider: { height: 2, backgroundColor: "#f1f5f9", marginVertical: 15 },
-  infoRow: { gap: 10 },
+  divider: { height: 2, backgroundColor: "#f1f5f9", marginVertical: 20 },
+  infoRow: { gap: 12 },
   infoItem: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#f8fafc",
-    padding: 15,
-    borderRadius: 12,
+    padding: 18,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
   },
-  infoText: { fontSize: 15, color: "#334155", flex: 1 },
-  bold: { fontWeight: "800" },
+  infoText: { fontSize: 16, color: "#334155", flex: 1 },
+  bold: { fontWeight: "900", color: "#000" },
   hiddenCamera: { position: "absolute", width: 1, height: 1, opacity: 0 },
 });

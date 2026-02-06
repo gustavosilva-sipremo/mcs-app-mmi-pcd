@@ -1,13 +1,19 @@
 import { StatusBar } from "expo-status-bar";
 import React from "react";
-import { ScrollView, StyleSheet, View, ViewStyle } from "react-native";
+import {
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View,
+  ViewStyle,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { globalStyles as g } from "../../styles/globalStyles";
 
 interface ScreenContainerProps {
   children: React.ReactNode;
   withScroll?: boolean;
-  isEmergency?: boolean; // Prop para mudar o estado visual do app em alertas
+  isEmergency?: boolean;
   style?: ViewStyle;
 }
 
@@ -17,9 +23,9 @@ export const ScreenContainer = ({
   isEmergency = false,
   style,
 }: ScreenContainerProps) => {
-  // Define a cor de fundo com base no estado de emergência
+  // Cores dinâmicas para feedback imediato
   const containerBackground = isEmergency
-    ? "#FEF2F2"
+    ? "#450A0A" // Fundo vermelho escuro para emergência (melhor contraste para texto branco)
     : g.container.backgroundColor;
 
   const ContentWrapper = withScroll ? ScrollView : View;
@@ -27,14 +33,29 @@ export const ScreenContainer = ({
   return (
     <SafeAreaView
       style={[g.container, { backgroundColor: containerBackground }, style]}
-      edges={["top", "left", "right"]} // Deixamos o bottom para controle manual ou via tabs
+      // 'bottom' é omitido para permitir que o conteúdo flua atrás de barras de navegação transparentes
+      edges={["top", "left", "right"]}
     >
-      <StatusBar style={isEmergency ? "light" : "dark"} animated />
+      {/* A StatusBar 'light' em emergência e 'dark' no padrão garante que 
+        os ícones do sistema (relógio, wifi) continuem visíveis.
+      */}
+      <StatusBar
+        style={isEmergency ? "light" : "dark"}
+        animated={true}
+        backgroundColor={containerBackground} // Importante para Android
+      />
 
       <ContentWrapper
         style={styles.flex}
-        contentContainerStyle={withScroll ? styles.scrollContent : styles.flex}
+        // bounce: false evita aquele efeito de 'mola' que pode desorientar em emergências
+        bounces={!isEmergency}
+        contentContainerStyle={[
+          withScroll ? styles.scrollContent : styles.flex,
+          isEmergency && { justifyContent: "center" }, // Centraliza o alerta se for emergência
+        ]}
         showsVerticalScrollIndicator={false}
+        // Melhora a performance de rolagem em listas complexas
+        scrollEventThrottle={16}
       >
         {children}
       </ContentWrapper>
@@ -48,6 +69,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 20, // Espaço extra para não colar no final da tela
+    paddingBottom: Platform.OS === "ios" ? 40 : 20, // Padding dinâmico para a barra inferior
   },
 });

@@ -1,34 +1,22 @@
 import { useRouter } from "expo-router";
-import { useEffect, useRef } from "react";
-import { Animated, Text, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { globalStyles as g } from "../styles/globalStyles";
+import { StyleSheet, Text, View } from "react-native";
+import { Badge } from "../components/ui/Badge";
+import { Button } from "../components/ui/Button";
+import { Card } from "../components/ui/Card";
+import { ScreenContainer } from "../components/ui/ScreenContainer";
+
+import { Colors, globalStyles as g } from "../styles/globalStyles";
 import { indexStyles as s } from "../styles/indexStyles";
 
 export default function Index() {
   const router = useRouter();
 
-  // Efeito suave de entrada
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 1000,
-      useNativeDriver: true,
-    }).start();
-  }, []);
-
   return (
-    <SafeAreaView style={g.container}>
-      <View style={g.content}>
-        {/* Glow de fundo vindo do Global */}
-        <View style={g.glow} />
-
-        <Animated.View style={[g.card, { opacity: fadeAnim }]}>
-          <View style={s.badge}>
-            <Text style={s.badgeText}>Acessibilidade Inclusiva</Text>
-          </View>
+    <ScreenContainer style={styles.container}>
+      {/* Centralização do conteúdo principal */}
+      <View style={styles.main}>
+        <Card animate>
+          <Badge title="Acessibilidade Inclusiva" variant="info" />
 
           <Text style={s.title}>
             Hardware <Text style={g.highlight}>Testing</Text>
@@ -37,44 +25,63 @@ export default function Index() {
           <Text style={s.description}>
             Valide feedbacks táteis, visuais e sonoros para garantir que seu app
             seja
-            <Text style={{ fontWeight: "bold", color: "#334155" }}>
-              {" "}
-              acessível a todos.
-            </Text>
+            <Text style={styles.boldText}> acessível a todos.</Text>
           </Text>
 
-          <TouchableOpacity
-            style={g.button}
-            activeOpacity={0.7}
-            onPress={() => router.push("/tests")}
-          >
-            <Text style={g.buttonText}>Iniciar Laboratório</Text>
-          </TouchableOpacity>
+          <View style={styles.buttonGap}>
+            <Button
+              title="Iniciar Laboratório"
+              icon="flask-outline"
+              onPress={() => router.push("/tests")}
+            />
 
-          {/* Botão secundário usando composição de estilos */}
-          <TouchableOpacity
-            style={[
-              g.button,
-              { backgroundColor: "#F1F5F9", marginTop: 12, elevation: 0 },
-            ]}
-            activeOpacity={0.7}
-            onPress={() => {
-              /* Link para documentação */
-            }}
-          >
-            <Text style={[g.buttonText, { color: "#475569" }]}>
-              Ver Documentação
-            </Text>
-          </TouchableOpacity>
-        </Animated.View>
-
-        <View style={{ alignItems: "center" }}>
-          <Text style={s.footer}>Versão 1.0.0</Text>
-          <Text style={[s.footer, { marginTop: 4 }]}>
-            Expo SDK 54 • TypeScript
-          </Text>
-        </View>
+            <Button
+              title="Ver Documentação"
+              icon="document-text-outline"
+              // CORREÇÃO DOS ERROS TS: Usando 'g' (global) em vez de 's'
+              variantStyle={g.buttonSecondary}
+              textStyle={g.buttonTextSecondary}
+              onPress={() => {
+                /* Link para documentação */
+              }}
+            />
+          </View>
+        </Card>
       </View>
-    </SafeAreaView>
+
+      {/* Rodapé dinâmico */}
+      <View style={styles.footer}>
+        <Text style={s.footer}>Versão 1.0.0</Text>
+        <Text style={[s.footer, styles.miniMargin]}>
+          Expo SDK 54 • TypeScript
+        </Text>
+      </View>
+    </ScreenContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: 24,
+  },
+  main: {
+    flex: 1,
+    justifyContent: "center",
+    width: "100%",
+  },
+  buttonGap: {
+    width: "100%",
+    gap: 12, // Usa a propriedade gap em vez de margin individual para limpeza
+  },
+  boldText: {
+    fontWeight: "700",
+    color: Colors.primary, // Usando o token de cor que definimos
+  },
+  footer: {
+    alignItems: "center",
+    paddingBottom: 20,
+  },
+  miniMargin: {
+    marginTop: 4,
+  },
+});

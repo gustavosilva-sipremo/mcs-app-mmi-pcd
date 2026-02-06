@@ -1,30 +1,40 @@
 import { StyleSheet } from "react-native";
+import { Colors } from "./globalStyles";
 
 export const testsStyles = StyleSheet.create({
   title: {
-    color: "#0F172A",
-    fontSize: 26,
-    fontWeight: "800",
+    color: Colors.primary,
+    fontSize: 28,
+    fontWeight: "900",
     textAlign: "center",
     marginBottom: 24,
+    letterSpacing: -0.5,
   },
   testGrid: {
     width: "100%",
-    gap: 12,
+    gap: 14, // Aumentado levemente para melhorar a área de clique
+    alignItems: "stretch",
   },
-  buttonSecondary: {
-    backgroundColor: "#F1F5F9",
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    elevation: 0,
-    shadowOpacity: 0,
+
+  // Variantes Semânticas com Sombras Coloridas
+  btnSuccess: {
+    backgroundColor: "#10B981",
+    shadowColor: "#10B981",
+    elevation: 4, // Para Android
   },
-  buttonTextSecondary: {
-    color: "#475569",
+  btnError: {
+    backgroundColor: "#EF4444",
+    shadowColor: "#EF4444",
+    elevation: 4,
   },
-  // Cores semânticas para os testes de hardware
-  btnSuccess: { backgroundColor: "#10b981" },
-  btnError: { backgroundColor: "#ef4444" },
-  btnAudio: { backgroundColor: "#6366f1" },
-  btnFlashActive: { backgroundColor: "#f59e0b" },
+  btnAudio: {
+    backgroundColor: "#6366F1",
+    shadowColor: "#6366F1",
+    elevation: 4,
+  },
+  btnFlashActive: {
+    backgroundColor: "#F59E0B",
+    shadowColor: "#F59E0B",
+    elevation: 6, // Maior destaque quando o flash está ligado
+  },
 });

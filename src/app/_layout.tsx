@@ -1,25 +1,52 @@
 import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { View } from "react-native";
+import { useEffect } from "react";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+
+// Impede que a Splash Screen feche automaticamente antes do carregamento
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  useEffect(() => {
+    // Simula um carregamento de recursos ou fontes (opcional)
+    // Se você tiver fontes customizadas, carregue-as aqui.
+    SplashScreen.hideAsync();
+  }, []);
+
   return (
-    <View style={{ flex: 1, backgroundColor: "#F8FAFC" }}>
-      {/* 'dark' faz com que os ícones (bateria, hora) fiquem pretos, ideal para fundo claro */}
-      <StatusBar style="dark" />
+    // GestureHandlerRootView é essencial para evitar bugs de toque e gestos em Android/iOS
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      {/* StatusBar configurada globalmente como dark para fundo Slate 50 */}
+      <StatusBar style="dark" translucent />
 
       <Stack
         screenOptions={{
           headerShown: false,
-          // Mantém o fundo consistente durante a transição entre telas
-          contentStyle: { backgroundColor: "#F8FAFC" },
-          // Adiciona uma animação de deslize lateral (estilo iOS) que é bem elegante
+          // contentStyle transparente permite que o backgroundColor venha do ScreenContainer
+          contentStyle: { backgroundColor: "transparent" },
           animation: "slide_from_right",
+          // Desativa o gesto de voltar arrastando (importante em apps de segurança
+          // para evitar que o usuário saia de um alerta por erro)
+          gestureEnabled: true,
+          fullScreenGestureEnabled: true,
         }}
       >
-        <Stack.Screen name="index" />
-        <Stack.Screen name="tests" />
+        {/* Definimos explicitamente as rotas para melhor indexação do Router */}
+        <Stack.Screen
+          name="index"
+          options={{
+            title: "Início",
+          }}
+        />
+        <Stack.Screen
+          name="tests"
+          options={{
+            title: "Laboratório de Hardware",
+            presentation: "card", // Garante comportamento de card no iOS
+          }}
+        />
       </Stack>
-    </View>
+    </GestureHandlerRootView>
   );
 }

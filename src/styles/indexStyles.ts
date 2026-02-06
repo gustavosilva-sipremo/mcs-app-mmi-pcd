@@ -1,39 +1,43 @@
 import { StyleSheet } from "react-native";
+import { Colors } from "./globalStyles"; // Importando nossos novos tokens
 
 export const indexStyles = StyleSheet.create({
+  // Base para o container da Badge
   badge: {
-    backgroundColor: "#DCFCE7",
     paddingHorizontal: 14,
     paddingVertical: 6,
-    borderRadius: 100,
+    borderRadius: 99,
     marginBottom: 20,
+    alignSelf: "center", // Garante centralização independente do container pai
   },
   badgeText: {
-    color: "#166534",
-    fontSize: 11,
-    fontWeight: "bold",
-    letterSpacing: 0.5,
+    fontSize: 12, // Levemente maior para melhor leitura
+    fontWeight: "800",
+    letterSpacing: 0.8,
     textTransform: "uppercase",
   },
   title: {
-    color: "#0F172A",
-    fontSize: 30,
-    fontWeight: "800",
+    color: Colors.primary,
+    fontSize: 32, // Escala tipográfica aumentada
+    fontWeight: "900",
     textAlign: "center",
     marginBottom: 16,
-    letterSpacing: -0.5,
+    letterSpacing: -1, // Kerning negativo para um visual mais moderno/bold
+    lineHeight: 38,
   },
   description: {
-    color: "#64748b",
+    color: Colors.secondary,
     textAlign: "center",
-    lineHeight: 24,
+    lineHeight: 26, // Mais espaçamento entre linhas para acessibilidade
     fontSize: 16,
-    marginBottom: 32,
+    marginBottom: 40,
+    paddingHorizontal: 10, // Evita que o texto encoste nas bordas do card
   },
   footer: {
-    marginTop: 32,
     color: "#94A3B8",
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "600",
+    textAlign: "center",
+    letterSpacing: 0.3,
   },
 });

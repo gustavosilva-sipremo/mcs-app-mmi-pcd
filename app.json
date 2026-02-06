@@ -1,28 +1,33 @@
 {
   "expo": {
-    "name": "my-app",
-    "slug": "my-app",
+    "name": "MMI Mineradora",
+    "slug": "mmi-mineradora",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./src/assets/images/icon.png",
-    "scheme": "myapp",
-    "userInterfaceStyle": "automatic",
+    "scheme": "mmi-mineradora",
+    "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
       "image": "./src/assets/images/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#F8FAFC"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mmi.mineradora",
+      "infoPlist": {
+        "UIBackgroundModes": ["audio"]
+      }
     },
     "android": {
+      "package": "com.mmi.mineradora",
       "adaptiveIcon": {
         "foregroundImage": "./src/assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#F8FAFC"
       },
-      "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "permissions": ["CAMERA", "VIBRATE"],
+      "edgeToEdgeEnabled": true
     },
     "web": {
       "bundler": "metro",
@@ -31,7 +36,18 @@
     },
     "plugins": [
       "expo-router",
-      "expo-audio"
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "O app precisa acessar a câmera para utilizar o flash em alertas de emergência."
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "appleTeamId": "YOUR_TEAM_ID"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

@@ -13,47 +13,49 @@ export default function Index() {
 
   return (
     <ScreenContainer style={styles.container}>
-      {/* Centralização do conteúdo principal */}
+      {/* O Glow global já está no ScreenContainer/Card, garantindo o visual */}
       <View style={styles.main}>
         <Card animate>
-          <Badge title="Acessibilidade Inclusiva" variant="info" />
+          <Badge title="Monitoramento Ativo" variant="info" />
 
           <Text style={s.title}>
-            Hardware <Text style={g.highlight}>Testing</Text>
+            MMI <Text style={g.highlight}>Mineradora</Text>
           </Text>
 
           <Text style={s.description}>
-            Valide feedbacks táteis, visuais e sonoros para garantir que seu app
-            seja
-            <Text style={styles.boldText}> acessível a todos.</Text>
+            Gestão de protocolos de emergência e
+            <Text style={styles.boldText}>
+              {" "}
+              validação de hardware inclusivo.
+            </Text>
           </Text>
 
           <View style={styles.buttonGap}>
+            {/* Botão de Destaque: Simulação */}
             <Button
-              title="Iniciar Laboratório"
-              icon="flask-outline"
-              onPress={() => router.push("/tests")}
+              title="Simular Acionamento"
+              icon="megaphone-outline"
+              variantStyle={styles.btnEmergency}
+              onPress={() => router.push("/acionamento")}
             />
 
+            {/* Botão Secundário: Laboratório */}
             <Button
-              title="Ver Documentação"
-              icon="document-text-outline"
-              // CORREÇÃO DOS ERROS TS: Usando 'g' (global) em vez de 's'
+              title="Laboratório de Hardware"
+              icon="flask-outline"
               variantStyle={g.buttonSecondary}
               textStyle={g.buttonTextSecondary}
-              onPress={() => {
-                /* Link para documentação */
-              }}
+              onPress={() => router.push("/tests")}
             />
           </View>
         </Card>
       </View>
 
-      {/* Rodapé dinâmico */}
+      {/* Rodapé institucional */}
       <View style={styles.footer}>
-        <Text style={s.footer}>Versão 1.0.0</Text>
+        <Text style={s.footer}>Segurança e Acessibilidade</Text>
         <Text style={[s.footer, styles.miniMargin]}>
-          Expo SDK 54 • TypeScript
+          Versão 1.2.0 • Estável
         </Text>
       </View>
     </ScreenContainer>
@@ -71,15 +73,23 @@ const styles = StyleSheet.create({
   },
   buttonGap: {
     width: "100%",
-    gap: 12, // Usa a propriedade gap em vez de margin individual para limpeza
+    gap: 12,
+  },
+  btnEmergency: {
+    backgroundColor: "#EF4444", // Vermelho Alerta
+    height: 65, // Ligeiramente maior para destaque
+    shadowColor: "#EF4444",
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 5,
   },
   boldText: {
-    fontWeight: "700",
-    color: Colors.primary, // Usando o token de cor que definimos
+    fontWeight: "800",
+    color: Colors.primary,
   },
   footer: {
     alignItems: "center",
-    paddingBottom: 20,
+    paddingBottom: 30,
   },
   miniMargin: {
     marginTop: 4,

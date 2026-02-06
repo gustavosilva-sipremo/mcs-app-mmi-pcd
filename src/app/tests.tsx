@@ -17,7 +17,7 @@ export default function TestsScreen() {
   const [isFlashOn, setIsFlashOn] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
 
-  const player = useAudioPlayer(require("../assets/sounds/luva.mp3"));
+  const player = useAudioPlayer(require("../assets/sounds/metal_gear.mp3"));
 
   // 📳 Feedback tátil refinado
   const handleVibration = async (type: "success" | "error") => {

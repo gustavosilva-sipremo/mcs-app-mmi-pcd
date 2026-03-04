@@ -1,5 +1,7 @@
 import * as Battery from "expo-battery";
+import Constants from "expo-constants";
 // A Expo Camera agora separa o Componente (CameraView) das funções (Camera)
+import LogoMMI from "@/assets/images/logos/logo_mmi.svg";
 import { Camera, CameraView } from "expo-camera";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -14,9 +16,11 @@ import { indexStyles as s } from "../styles/indexStyles";
 
 export default function Index() {
   const router = useRouter();
+  const appVersion = Constants.expoConfig?.version ?? "1.0.0";
 
   const [batteryLevel, setBatteryLevel] = useState<number | null>(null);
   const [isTorchOn, setIsTorchOn] = useState(false);
+
 
   useEffect(() => {
     const updateBattery = async () => {
@@ -70,15 +74,16 @@ export default function Index() {
             />
           </View>
 
+          <LogoMMI style={styles.logo} />
+
           <Text style={[s.title, styles.titleAdjust]}>
             MMI <Text style={g.highlight}>Mineradora</Text>
           </Text>
 
           <Text style={s.description}>
-            Gestão de protocolos de emergência e
+            Receba alertas importantes e
             <Text style={styles.boldText}>
-              {" "}
-              validação de hardware inclusivo.
+              {" "}conte com suporte acessível quando precisar.
             </Text>
           </Text>
 
@@ -123,9 +128,9 @@ export default function Index() {
       </View>
 
       <View style={styles.footer}>
-        <Text style={s.footer}>Segurança e Acessibilidade</Text>
+        <Text style={s.footer}>Segurança & Acessibilidade</Text>
         <Text style={[s.footer, styles.miniMargin]}>
-          Versão 1.2.0 • Estável
+          Versão {appVersion}
         </Text>
       </View>
 
@@ -153,21 +158,27 @@ const styles = StyleSheet.create({
   titleAdjust: { marginTop: 10 },
   buttonGap: { width: "100%", gap: 12, marginTop: 20 },
   btnEmergency: {
-    backgroundColor: "#EF4444",
+    backgroundColor: Colors.danger,
     height: 70,
-    shadowColor: "#EF4444",
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 5,
+    shadowColor: Colors.danger,
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+    elevation: 6,
   },
   btnUtility: {
-    backgroundColor: "#F1F5F9",
+    backgroundColor: Colors.muted,
     borderWidth: 1,
-    borderColor: "#CBD5E1",
+    borderColor: Colors.border,
   },
   btnActive: {
-    backgroundColor: "#334155",
-    borderColor: "#334155",
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  logo: {
+    width: 44,
+    height: 44,
+    alignSelf: "center",
+    marginVertical: 8,
   },
   boldText: { fontWeight: "800", color: Colors.primary },
   footer: { alignItems: "center", paddingBottom: 30 },

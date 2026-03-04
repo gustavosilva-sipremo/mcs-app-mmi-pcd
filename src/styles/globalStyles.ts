@@ -3,20 +3,21 @@ import { Dimensions, Platform, StyleSheet } from "react-native";
 export const { width, height } = Dimensions.get("window");
 
 export const Colors = {
-  primary: "#0F172A",
-  secondary: "#475569",
-  accent: "#0284C7",
-  background: "#F8FAFC",
+  primary: "#432382",
+  secondary: "#5B3AA3",
+  accent: "#7C3AED",
+
+  background: "#F6F4FB",
   card: "#FFFFFF",
-  border: "#CBD5E1",
-  glow: "#BAE6FD",
+  border: "#D6D0EB",
+  glow: "#C4B5FD",
 
   danger: "#B91C1C",
-  success: "#065F46",
+  success: "#166534",
   warning: "#92400E",
 
-  muted: "#F1F5F9",
-  textMuted: "#334155",
+  muted: "#F3F0FF",
+  textMuted: "#4C3B75",
 };
 
 export const globalStyles = StyleSheet.create({

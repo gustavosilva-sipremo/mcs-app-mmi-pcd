@@ -2,7 +2,7 @@
   "expo": {
     "name": "MMI Mineradora",
     "slug": "mmi-mineradora",
-    "version": "1.2.0",
+    "version": "1.3.6",
     "runtimeVersion": {
       "policy": "appVersion"
     },
@@ -10,7 +10,6 @@
     "icon": "./src/assets/images/icons/icon.png",
     "scheme": "mmi-mineradora",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
     "splash": {
       "image": "./src/assets/images/icons/splash-icon.png",
       "resizeMode": "contain",
@@ -41,8 +40,7 @@
         "WAKE_LOCK",
         "FOREGROUND_SERVICE",
         "MODIFY_AUDIO_SETTINGS"
-      ],
-      "edgeToEdgeEnabled": true
+      ]
     },
     "plugins": [
       "expo-router",

@@ -95,7 +95,7 @@ export default function AcionamentoScreen() {
           </View>
 
           <Button
-            title="Cancelar e Voltar"
+            title="Cancelar & Voltar"
             variantStyle={[
               g.buttonSecondary,
               { marginTop: 40, borderWidth: 0 },

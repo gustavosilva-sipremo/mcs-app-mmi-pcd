@@ -18,59 +18,7 @@
             └── 📁images
                 └── 📁demos
                 └── 📁icons
-                    └── 📁android
-                        └── 📁res
-                            └── 📁mipmap-anydpi-v26
-                                ├── ic_launcher.xml
-                            └── 📁mipmap-hdpi
-                                ├── ic_launcher_background.png
-                                ├── ic_launcher_foreground.png
-                                ├── ic_launcher_monochrome.png
-                                ├── ic_launcher.png
-                            └── 📁mipmap-mdpi
-                                ├── ic_launcher_background.png
-                                ├── ic_launcher_foreground.png
-                                ├── ic_launcher_monochrome.png
-                                ├── ic_launcher.png
-                            └── 📁mipmap-xhdpi
-                                ├── ic_launcher_background.png
-                                ├── ic_launcher_foreground.png
-                                ├── ic_launcher_monochrome.png
-                                ├── ic_launcher.png
-                            └── 📁mipmap-xxhdpi
-                                ├── ic_launcher_background.png
-                                ├── ic_launcher_foreground.png
-                                ├── ic_launcher_monochrome.png
-                                ├── ic_launcher.png
-                            └── 📁mipmap-xxxhdpi
-                                ├── ic_launcher_background.png
-                                ├── ic_launcher_foreground.png
-                                ├── ic_launcher_monochrome.png
-                                ├── ic_launcher.png
-                        ├── play_store_512.png
-                    └── 📁ios
-                        ├── AppIcon-20@2x.png
-                        ├── AppIcon-20@2x~ipad.png
-                        ├── AppIcon-20@3x.png
-                        ├── AppIcon-20~ipad.png
-                        ├── AppIcon-29.png
-                        ├── AppIcon-29@2x.png
-                        ├── AppIcon-29@2x~ipad.png
-                        ├── AppIcon-29@3x.png
-                        ├── AppIcon-29~ipad.png
-                        ├── AppIcon-40@2x.png
-                        ├── AppIcon-40@2x~ipad.png
-                        ├── AppIcon-40@3x.png
-                        ├── AppIcon-40~ipad.png
-                        ├── AppIcon-60@2x~car.png
-                        ├── AppIcon-60@3x~car.png
-                        ├── AppIcon-83.5@2x~ipad.png
-                        ├── AppIcon@2x.png
-                        ├── AppIcon@2x~ipad.png
-                        ├── AppIcon@3x.png
-                        ├── AppIcon~ios-marketing.png
-                        ├── AppIcon~ipad.png
-                        └── Contents.json
+                └── 📁logos
             └── 📁sounds
                 ├── metal_gear.mp3
         └── 📁components
@@ -86,7 +34,9 @@
     ├── .gitignore
     ├── app.json
     ├── expo-env.d.ts
+    ├── metro.config.js
     ├── package-lock.json
     ├── package.json
+    ├── svg.d.ts
     └── tsconfig.json
 ```

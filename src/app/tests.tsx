@@ -129,7 +129,7 @@ export default function TestsScreen() {
             <View style={styles.divider} />
 
             <Button
-              title="Voltar para Home"
+              title="Voltar"
               icon="home-outline"
               variantStyle={g.buttonSecondary}
               textStyle={g.buttonTextSecondary}

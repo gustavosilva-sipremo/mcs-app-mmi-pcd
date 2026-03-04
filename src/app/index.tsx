@@ -74,7 +74,7 @@ export default function Index() {
             />
           </View>
 
-          <LogoMMI style={styles.logo} />
+          <LogoMMI width={86} height={86} style={styles.logo} />
 
           <Text style={[s.title, styles.titleAdjust]}>
             MMI <Text style={g.highlight}>Mineradora</Text>
@@ -98,7 +98,7 @@ export default function Index() {
             />
 
             <Button
-              title="Laboratório de Hardware"
+              title="Teste de Hardware"
               icon="flask-outline"
               variantStyle={g.buttonSecondary}
               textStyle={g.buttonTextSecondary}
@@ -153,10 +153,10 @@ const styles = StyleSheet.create({
     width: "100%",
     flexDirection: "row",
     justifyContent: "flex-start",
-    marginBottom: 8,
+    marginBottom: 6,
   },
   titleAdjust: { marginTop: 10 },
-  buttonGap: { width: "100%", gap: 12, marginTop: 20 },
+  buttonGap: { width: "100%", gap: 12, marginTop: 8 },
   btnEmergency: {
     backgroundColor: Colors.danger,
     height: 70,
@@ -175,10 +175,10 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
   },
   logo: {
-    width: 44,
-    height: 44,
+    width: 86,
+    height: 86,
     alignSelf: "center",
-    marginVertical: 8,
+    marginVertical: 6,
   },
   boldText: { fontWeight: "800", color: Colors.primary },
   footer: { alignItems: "center", paddingBottom: 30 },

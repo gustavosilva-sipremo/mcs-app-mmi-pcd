@@ -1,15 +1,20 @@
-import { useAudioPlayer } from "expo-audio";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import * as Speech from "expo-speech";
-import React, { useState } from "react";
-import { Alert, StyleSheet, Text, View } from "react-native";
+import React, { useCallback, useRef, useState } from "react";
+import { Alert, Text, View } from "react-native";
+
+import {
+  AlertSoundHandle,
+  AlertSoundPlayer,
+} from "../components/ui/AlertSoundPlayer";
 
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 import { ScreenContainer } from "../components/ui/ScreenContainer";
 import { useTheme } from "../context/ThemeContext";
+import { testsStyles as styles } from "../styles/testsStyles";
 
 export default function TestsScreen() {
   const router = useRouter();
@@ -18,45 +23,50 @@ export default function TestsScreen() {
   const [isFlashOn, setIsFlashOn] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
 
-  const player = useAudioPlayer(require("../assets/sounds/metal_gear.mp3"));
+  // ✅ NOVO PLAYER FIXO DE ALERTA
+  const alertSoundRef = useRef<AlertSoundHandle>(null);
 
-  /* 📳 Feedback Tátil */
-  const handleVibration = async (type: "success" | "error") => {
+  /* =========================
+     HAPTIC
+  ========================== */
+
+  const handleVibration = useCallback(async (type: "success" | "error") => {
     const feedback =
       type === "success"
         ? Haptics.NotificationFeedbackType.Success
         : Haptics.NotificationFeedbackType.Error;
 
     await Haptics.notificationAsync(feedback);
-  };
+  }, []);
 
-  /* 🗣️ Teste de Voz */
-  const testSpeech = () => {
-    const message =
-      "Teste de sintetizador de voz. Sistema de áudio da mineradora operando normalmente.";
+  /* =========================
+     TTS
+  ========================== */
 
-    Speech.speak(message, {
-      language: "pt-BR",
-      rate: 0.9,
-      pitch: 1.0,
-    });
-  };
+  const testSpeech = useCallback(() => {
+    Speech.speak(
+      "Teste de sintetizador de voz. Sistema de áudio da mineradora operando normalmente.",
+      {
+        language: "pt-BR",
+        rate: 0.9,
+        pitch: 1.0,
+      }
+    );
+  }, []);
 
-  /* 🔊 Som de teste */
-  const playTestSound = () => {
-    try {
-      if (player.playing) player.seekTo(0);
-      player.play();
-    } catch {
-      Alert.alert(
-        "Erro de Áudio",
-        "Não foi possível reproduzir o som de alerta."
-      );
-    }
-  };
+  /* =========================
+     AUDIO (NOVO)
+  ========================== */
 
-  /* 🔦 Flash */
-  const toggleFlash = async () => {
+  const playTestSound = useCallback(() => {
+    alertSoundRef.current?.play();
+  }, []);
+
+  /* =========================
+     FLASH
+  ========================== */
+
+  const toggleFlash = useCallback(async () => {
     if (!permission?.granted) {
       const { granted } = await requestPermission();
       if (!granted) {
@@ -68,9 +78,13 @@ export default function TestsScreen() {
       }
     }
 
-    setIsFlashOn(!isFlashOn);
+    setIsFlashOn((prev) => !prev);
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-  };
+  }, [permission, requestPermission]);
+
+  /* =========================
+     RENDER
+  ========================== */
 
   return (
     <ScreenContainer withScroll>
@@ -82,55 +96,34 @@ export default function TestsScreen() {
             borderColor: theme.border,
           }}
         >
-          <Text
-            style={[
-              styles.title,
-              { color: theme.text },
-            ]}
-          >
+          <Text style={[styles.title, { color: theme.text }]}>
             Painel de{" "}
             <Text style={{ color: theme.primary }}>
               Hardware
             </Text>
           </Text>
 
-          <Text
-            style={[
-              styles.description,
-              { color: theme.text },
-            ]}
-          >
+          <Text style={[styles.description, { color: theme.text }]}>
             Valide os componentes críticos de pânico e acessibilidade.
           </Text>
 
           <View style={styles.grid}>
-            {/* Vibração Sucesso */}
             <Button
               title="Vibração Sucesso"
               icon="checkmark-circle-outline"
-              variantStyle={{
-                backgroundColor: theme.primary,
-              }}
-              textStyle={{
-                color: isHighContrast ? "#000" : "#FFF",
-              }}
+              variantStyle={[styles.btnSuccess]}
+              textStyle={{ color: isHighContrast ? "#000" : "#FFF" }}
               onPress={() => handleVibration("success")}
-              accessibilityLabel="Testar vibração de sucesso"
             />
 
-            {/* Vibração Erro */}
             <Button
               title="Vibração Erro"
               icon="close-circle-outline"
-              variantStyle={{
-                backgroundColor: theme.danger,
-              }}
+              variantStyle={[styles.btnError]}
               textStyle={{ color: "#FFF" }}
               onPress={() => handleVibration("error")}
-              accessibilityLabel="Testar vibração de erro"
             />
 
-            {/* TTS */}
             <Button
               title="Testar Voz (TTS)"
               icon="chatbubble-ellipses-outline"
@@ -144,10 +137,8 @@ export default function TestsScreen() {
                 fontWeight: "700",
               }}
               onPress={testSpeech}
-              accessibilityLabel="Testar síntese de voz para deficientes visuais"
             />
 
-            {/* Áudio */}
             <Button
               title="Ouvir Alarme"
               icon="volume-high-outline"
@@ -160,17 +151,18 @@ export default function TestsScreen() {
               onPress={playTestSound}
             />
 
-            {/* Flash */}
             <Button
               title={isFlashOn ? "Desligar Flash" : "Testar Flash"}
               icon={isFlashOn ? "flashlight" : "flashlight-outline"}
-              variantStyle={{
-                backgroundColor: isFlashOn
-                  ? theme.primary
-                  : theme.card,
-                borderWidth: 1,
-                borderColor: theme.border,
-              }}
+              variantStyle={
+                isFlashOn
+                  ? styles.btnFlashActive
+                  : {
+                    backgroundColor: theme.card,
+                    borderWidth: 1,
+                    borderColor: theme.border,
+                  }
+              }
               textStyle={{
                 color: isFlashOn
                   ? isHighContrast
@@ -188,7 +180,6 @@ export default function TestsScreen() {
               ]}
             />
 
-            {/* Voltar */}
             <Button
               title="Voltar"
               icon="home-outline"
@@ -203,6 +194,9 @@ export default function TestsScreen() {
           </View>
         </Card>
 
+        {/* ✅ PLAYER FIXO DE ALERTA */}
+        <AlertSoundPlayer ref={alertSoundRef} />
+
         {permission?.granted && (
           <CameraView
             style={styles.hiddenCamera}
@@ -214,35 +208,3 @@ export default function TestsScreen() {
     </ScreenContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    padding: 24,
-    justifyContent: "center",
-    flex: 1,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "800",
-    textAlign: "center",
-    marginBottom: 6,
-  },
-  description: {
-    textAlign: "center",
-    marginBottom: 20,
-  },
-  grid: {
-    gap: 12,
-  },
-  divider: {
-    height: 1,
-    width: "100%",
-    marginVertical: 10,
-  },
-  hiddenCamera: {
-    position: "absolute",
-    width: 1,
-    height: 1,
-    opacity: 0,
-  },
-});

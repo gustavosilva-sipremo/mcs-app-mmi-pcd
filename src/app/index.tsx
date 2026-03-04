@@ -3,8 +3,8 @@ import * as Battery from "expo-battery";
 import { Camera, CameraView } from "expo-camera";
 import Constants from "expo-constants";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
-import { Alert, StyleSheet, Text, View } from "react-native";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Alert, Text, View } from "react-native";
 
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
@@ -12,6 +12,7 @@ import { Card } from "../components/ui/Card";
 import { ScreenContainer } from "../components/ui/ScreenContainer";
 
 import { useTheme } from "../context/ThemeContext";
+import { indexStyles as styles } from "../styles/indexStyles";
 
 export default function Index() {
   const router = useRouter();
@@ -22,13 +23,17 @@ export default function Index() {
   const [batteryLevel, setBatteryLevel] = useState<number | null>(null);
   const [isTorchOn, setIsTorchOn] = useState(false);
 
+  /* =========================
+     BATTERY
+  ========================== */
+
   useEffect(() => {
-    const updateBattery = async () => {
+    const loadBatteryLevel = async () => {
       const level = await Battery.getBatteryLevelAsync();
       setBatteryLevel(level);
     };
 
-    updateBattery();
+    loadBatteryLevel();
 
     const subscription = Battery.addBatteryLevelListener(({ batteryLevel }) => {
       setBatteryLevel(batteryLevel);
@@ -44,25 +49,52 @@ export default function Index() {
     return () => subscription.remove();
   }, []);
 
-  const toggleTorch = async () => {
+  const batteryPercentage = useMemo(() => {
+    return batteryLevel !== null ? Math.round(batteryLevel * 100) : null;
+  }, [batteryLevel]);
+
+  const batteryVariant = useMemo(() => {
+    if (batteryLevel === null) return "info";
+    return batteryLevel > 0.2 ? "info" : "warning";
+  }, [batteryLevel]);
+
+  /* =========================
+     TORCH
+  ========================== */
+
+  const toggleTorch = useCallback(async () => {
     const { granted } = await Camera.requestCameraPermissionsAsync();
 
-    if (granted) {
-      setIsTorchOn(!isTorchOn);
-    } else {
+    if (!granted) {
       Alert.alert(
         "Acesso Negado",
         "A permissão de câmera é obrigatória para utilizar a lanterna de serviço."
       );
+      return;
     }
-  };
+
+    setIsTorchOn((prev) => !prev);
+  }, []);
+
+  /* =========================
+     NAVIGATION
+  ========================== */
+
+  const goToAcionamento = useCallback(() => {
+    router.push("/acionamento");
+  }, [router]);
+
+  const goToTests = useCallback(() => {
+    router.push("/tests");
+  }, [router]);
+
+  /* =========================
+     RENDER
+  ========================== */
 
   return (
     <ScreenContainer
-      style={[
-        styles.container,
-        { backgroundColor: theme.background },
-      ]}
+      style={[styles.container, { backgroundColor: theme.background }]}
     >
       <View style={styles.main}>
         <Card
@@ -72,49 +104,40 @@ export default function Index() {
             borderColor: theme.border,
           }}
         >
+          {/* HEADER */}
           <View style={styles.headerRow}>
             <Badge
               title={
-                batteryLevel !== null
-                  ? `Bateria: ${Math.round(batteryLevel * 100)}%`
+                batteryPercentage !== null
+                  ? `Bateria: ${batteryPercentage}%`
                   : "Lendo Bateria..."
               }
-              variant={
-                batteryLevel !== null && batteryLevel > 0.2
-                  ? "info"
-                  : "warning"
-              }
-              accessibilityLabel={`Nível de bateria atual: ${batteryLevel ? Math.round(batteryLevel * 100) : 0
+              variant={batteryVariant}
+              accessibilityLabel={`Nível de bateria atual: ${batteryPercentage ?? 0
                 } por cento`}
             />
           </View>
 
+          {/* LOGO */}
           <LogoMMI width={86} height={86} style={styles.logo} />
 
-          <Text
-            style={[
-              styles.title,
-              { color: theme.text },
-            ]}
-          >
+          {/* TITLE */}
+          <Text style={[styles.title, { color: theme.text }]}>
             MMI{" "}
             <Text style={{ color: theme.primary }}>
               Mineradora
             </Text>
           </Text>
 
-          <Text
-            style={[
-              styles.description,
-              { color: theme.text },
-            ]}
-          >
+          {/* DESCRIPTION */}
+          <Text style={[styles.description, { color: theme.text }]}>
             Receba alertas importantes e
             <Text style={{ fontWeight: "800", color: theme.primary }}>
               {" "}conte com suporte acessível quando precisar.
             </Text>
           </Text>
 
+          {/* BUTTONS */}
           <View style={styles.buttonGap}>
             <Button
               title="Simular Acionamento"
@@ -126,7 +149,7 @@ export default function Index() {
               textStyle={{ color: "#FFF" }}
               accessibilityLabel="Iniciar simulação de alerta de emergência"
               accessibilityHint="Abre a tela de ativação do protocolo de pânico"
-              onPress={() => router.push("/acionamento")}
+              onPress={goToAcionamento}
             />
 
             <Button
@@ -140,7 +163,7 @@ export default function Index() {
               textStyle={{ color: theme.text }}
               accessibilityLabel="Laboratório de testes"
               accessibilityHint="Verifica o funcionamento dos sensores de hardware"
-              onPress={() => router.push("/tests")}
+              onPress={goToTests}
             />
 
             <Button
@@ -154,9 +177,7 @@ export default function Index() {
                 borderColor: theme.border,
               }}
               textStyle={{
-                color: isTorchOn
-                  ? "#000"
-                  : theme.text,
+                color: isTorchOn ? "#000" : theme.text,
               }}
               onPress={toggleTorch}
               accessibilityLabel={
@@ -166,7 +187,6 @@ export default function Index() {
               }
             />
 
-            {/* BOTÃO DE TEMA */}
             <Button
               title={
                 isHighContrast
@@ -190,70 +210,25 @@ export default function Index() {
         </Card>
       </View>
 
-      <View style={styles.footer}>
-        <Text style={{ color: theme.text, opacity: 0.7 }}>
+      {/* FOOTER */}
+      <View style={styles.footerContainer}>
+        <Text style={[styles.footerText, { color: theme.text, opacity: 0.7 }]}>
           Segurança & Acessibilidade
         </Text>
+
         <Text style={{ color: theme.text, opacity: 0.5, marginTop: 4 }}>
           Versão {appVersion}
         </Text>
       </View>
 
+      {/* CAMERA (Torch Controller) */}
       {isTorchOn && (
         <CameraView
           style={styles.hiddenCamera}
-          enableTorch={isTorchOn}
+          enableTorch
           facing="back"
         />
       )}
     </ScreenContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 24,
-    flex: 1,
-  },
-  main: {
-    flex: 1,
-    justifyContent: "center",
-    width: "100%",
-  },
-  headerRow: {
-    width: "100%",
-    flexDirection: "row",
-    justifyContent: "flex-start",
-    marginBottom: 6,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: "800",
-    textAlign: "center",
-    marginTop: 10,
-  },
-  description: {
-    textAlign: "center",
-    marginTop: 6,
-    lineHeight: 20,
-  },
-  buttonGap: {
-    width: "100%",
-    gap: 12,
-    marginTop: 16,
-  },
-  logo: {
-    alignSelf: "center",
-    marginVertical: 6,
-  },
-  footer: {
-    alignItems: "center",
-    paddingBottom: 30,
-  },
-  hiddenCamera: {
-    position: "absolute",
-    width: 1,
-    height: 1,
-    opacity: 0,
-  },
-});

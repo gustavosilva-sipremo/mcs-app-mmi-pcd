@@ -6,13 +6,13 @@ import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Text, View } from "react-native";
 
-import { Badge } from "../components/ui/Badge";
-import { Button } from "../components/ui/Button";
-import { Card } from "../components/ui/Card";
-import { ScreenContainer } from "../components/ui/ScreenContainer";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { ScreenContainer } from "@/components/ui/ScreenContainer";
 
-import { useTheme } from "../context/ThemeContext";
-import { indexStyles as styles } from "../styles/indexStyles";
+import { useTheme } from "@/context/ThemeContext";
+import { indexStyles as styles } from "@/styles/indexStyles";
 
 export default function Index() {
   const router = useRouter();
@@ -213,7 +213,7 @@ export default function Index() {
       {/* FOOTER */}
       <View style={styles.footerContainer}>
         <Text style={[styles.footerText, { color: theme.text, opacity: 0.7 }]}>
-          Segurança & Acessibilidade
+          © 2026 Sipremo MCS
         </Text>
 
         <Text style={{ color: theme.text, opacity: 0.5, marginTop: 4 }}>

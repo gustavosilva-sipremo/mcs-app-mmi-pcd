@@ -1,3 +1,4 @@
+import { globalStyles as g } from "@/styles/globalStyles";
 import React, { memo, useEffect, useRef } from "react";
 import {
   Animated,
@@ -6,7 +7,6 @@ import {
   View,
   ViewStyle,
 } from "react-native";
-import { globalStyles as g } from "../../styles/globalStyles";
 
 interface CardProps {
   children: React.ReactNode;

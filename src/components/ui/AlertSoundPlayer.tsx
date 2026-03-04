@@ -14,15 +14,14 @@ export type AlertSoundHandle = {
 export const AlertSoundPlayer = forwardRef<AlertSoundHandle>(
     (_, ref) => {
         const player = useAudioPlayer(
-            require("../../assets/sounds/metal_gear.mp3")
+            require("@/assets/sounds/luva.mp3")
         );
 
-        const play = useCallback(() => {
+        const play = useCallback(async () => {
             try {
-                if (player.playing) {
-                    player.seekTo(0);
-                }
-                player.play();
+                await player.pause();
+                await player.seekTo(0);
+                await player.play();
             } catch {
                 Alert.alert(
                     "Erro de Áudio",

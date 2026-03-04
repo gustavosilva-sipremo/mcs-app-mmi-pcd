@@ -13,8 +13,8 @@ import {
   View,
 } from "react-native";
 
-import { Button } from "../components/ui/Button";
-import { useTheme } from "../context/ThemeContext";
+import { Button } from "@/components/ui/Button";
+import { useTheme } from "@/context/ThemeContext";
 
 export default function AlertScreen() {
   const router = useRouter();
@@ -24,7 +24,7 @@ export default function AlertScreen() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [flash, setFlash] = useState(false);
 
-  const player = useAudioPlayer(require("../assets/sounds/metal_gear.mp3"));
+  const player = useAudioPlayer(require("@/assets/sounds/metal_gear.mp3"));
 
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const overlayAnim = useRef(new Animated.Value(0)).current;

@@ -1,5 +1,5 @@
+import { highContrastDarkTheme, lightTheme, ThemeType } from "@/styles/themes";
 import React, { createContext, useContext, useState } from "react";
-import { highContrastDarkTheme, lightTheme, ThemeType } from "../styles/themes";
 
 type ThemeContextType = {
     theme: ThemeType;

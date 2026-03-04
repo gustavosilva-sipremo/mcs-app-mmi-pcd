@@ -12,10 +12,10 @@ import {
   View,
 } from "react-native";
 
-import { Button } from "../components/ui/Button";
-import { Card } from "../components/ui/Card";
-import { ScreenContainer } from "../components/ui/ScreenContainer";
-import { useTheme } from "../context/ThemeContext";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { ScreenContainer } from "@/components/ui/ScreenContainer";
+import { useTheme } from "@/context/ThemeContext";
 
 /* =========================
    CONSTANTES

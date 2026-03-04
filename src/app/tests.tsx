@@ -8,13 +8,13 @@ import { Alert, Text, View } from "react-native";
 import {
   AlertSoundHandle,
   AlertSoundPlayer,
-} from "../components/ui/AlertSoundPlayer";
+} from "@/components/ui/AlertSoundPlayer";
 
-import { Button } from "../components/ui/Button";
-import { Card } from "../components/ui/Card";
-import { ScreenContainer } from "../components/ui/ScreenContainer";
-import { useTheme } from "../context/ThemeContext";
-import { testsStyles as styles } from "../styles/testsStyles";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { ScreenContainer } from "@/components/ui/ScreenContainer";
+import { useTheme } from "@/context/ThemeContext";
+import { testsStyles as styles } from "@/styles/testsStyles";
 
 export default function TestsScreen() {
   const router = useRouter();
@@ -23,7 +23,6 @@ export default function TestsScreen() {
   const [isFlashOn, setIsFlashOn] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
 
-  // ✅ NOVO PLAYER FIXO DE ALERTA
   const alertSoundRef = useRef<AlertSoundHandle>(null);
 
   /* =========================
@@ -194,7 +193,6 @@ export default function TestsScreen() {
           </View>
         </Card>
 
-        {/* ✅ PLAYER FIXO DE ALERTA */}
         <AlertSoundPlayer ref={alertSoundRef} />
 
         {permission?.granted && (

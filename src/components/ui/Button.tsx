@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
-import * as Haptics from "expo-haptics"; // Adicionado para feedback tátil em todos os botões
+import * as Haptics from "expo-haptics";
 import React from "react";
 import {
+  ActivityIndicator,
   StyleSheet,
   Text,
   TextStyle,
@@ -10,14 +11,15 @@ import {
   View,
   ViewStyle,
 } from "react-native";
-import { globalStyles as g } from "../../styles/globalStyles";
 
 interface ButtonProps extends TouchableOpacityProps {
   title: string;
   icon?: keyof typeof Ionicons.glyphMap;
   variantStyle?: ViewStyle | ViewStyle[];
   textStyle?: TextStyle | TextStyle[];
-  hapticType?: Haptics.ImpactFeedbackStyle; // Permite personalizar a vibração do clique
+  hapticType?: Haptics.ImpactFeedbackStyle;
+  loading?: boolean;
+  disabled?: boolean;
 }
 
 export const Button = ({
@@ -27,56 +29,107 @@ export const Button = ({
   textStyle,
   hapticType = Haptics.ImpactFeedbackStyle.Light,
   onPress,
+  loading = false,
+  disabled = false,
+  accessibilityLabel,
+  accessibilityHint,
   ...props
 }: ButtonProps) => {
   const flatTextStyle = StyleSheet.flatten(textStyle);
   const iconColor = flatTextStyle?.color || "#FFFFFF";
 
-  const handlePress = (event: any) => {
-    // PCD: Feedback tátil em cada interação confirma para o usuário que o botão foi acionado
-    Haptics.impactAsync(hapticType);
+  const handlePress = async (event: any) => {
+    if (disabled || loading) return;
+
+    await Haptics.impactAsync(hapticType);
+
     if (onPress) onPress(event);
   };
 
   return (
     <TouchableOpacity
-      style={[g.button, styles.base, variantStyle]}
-      activeOpacity={0.8}
+      activeOpacity={0.85}
       onPress={handlePress}
-      // ACESSIBILIDADE (PCD):
+      disabled={disabled || loading}
+      style={[
+        styles.container,
+        disabled && styles.disabled,
+        variantStyle,
+      ]}
       accessibilityRole="button"
-      accessibilityLabel={props.accessibilityLabel || `Botão: ${title}`}
+      accessibilityState={{ disabled, busy: loading }}
+      accessibilityLabel={accessibilityLabel || title}
       accessibilityHint={
-        props.accessibilityHint || "Toque duas vezes para ativar"
+        accessibilityHint || "Toque duas vezes para ativar"
       }
       {...props}
     >
-      <View style={styles.content}>
-        {icon && (
-          <Ionicons
-            name={icon}
-            size={24}
-            color={iconColor as string}
-            importantForAccessibility="no-hide-descendants" // Ícone é decorativo, o texto já explica
-          />
-        )}
-        <Text style={[g.buttonText, textStyle]}>{title}</Text>
-      </View>
+      {loading ? (
+        <ActivityIndicator size="small" color={iconColor as string} />
+      ) : (
+        <>
+          {/* ÍCONE FIXO */}
+          <View style={styles.iconContainer}>
+            {icon && (
+              <Ionicons
+                name={icon}
+                size={22}
+                color={iconColor as string}
+                importantForAccessibility="no-hide-descendants"
+              />
+            )}
+          </View>
+
+          {/* TEXTO CENTRALIZADO REAL */}
+          <View style={styles.textContainer}>
+            <Text
+              style={[styles.text, textStyle]}
+              numberOfLines={2}
+              adjustsFontSizeToFit
+              minimumFontScale={0.85}
+            >
+              {title}
+            </Text>
+          </View>
+
+          {/* Espaço fantasma para manter simetria */}
+          <View style={styles.iconContainer} />
+        </>
+      )}
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
-  base: {
+  container: {
     width: "100%",
-    minHeight: 64, // Mínimo de 48dp é o exigido pelo Google, 64 é ideal para luvas/trabalho
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  content: {
+    minHeight: 64,
+    borderRadius: 16,
+    paddingHorizontal: 16,
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
+  },
+
+  disabled: {
+    opacity: 0.6,
+  },
+
+  iconContainer: {
+    width: 32, // largura fixa
+    alignItems: "center",
     justifyContent: "center",
-    gap: 12,
+  },
+
+  textContainer: {
+    flex: 1,
+    alignItems: "center", // centraliza o texto independente do ícone
+    justifyContent: "center",
+  },
+
+  text: {
+    fontSize: 16,
+    fontWeight: "700",
+    textAlign: "center",
   },
 });

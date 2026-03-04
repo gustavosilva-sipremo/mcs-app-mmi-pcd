@@ -3,49 +3,64 @@ import { useAudioPlayer } from "expo-audio";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import * as Speech from "expo-speech"; // Adicionado para PCD
+import * as Speech from "expo-speech";
 import React, { useEffect, useRef, useState } from "react";
-import { Animated, Modal, StyleSheet, Text, View } from "react-native";
+import {
+  Animated,
+  Modal,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+
 import { Button } from "../components/ui/Button";
+import { useTheme } from "../context/ThemeContext";
 
 export default function AlertScreen() {
   const router = useRouter();
+  const { theme, isHighContrast } = useTheme();
+
   const [permission] = useCameraPermissions();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [flash, setFlash] = useState(false);
 
   const player = useAudioPlayer(require("../assets/sounds/metal_gear.mp3"));
+
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const overlayAnim = useRef(new Animated.Value(0)).current;
   const alertInterval = useRef<any>(null);
 
+  /* =========================
+     HARDWARE STOP
+  ========================== */
   const stopHardwareActions = () => {
     if (alertInterval.current) {
       clearInterval(alertInterval.current);
       alertInterval.current = null;
     }
-    Speech.stop(); // Interrompe a fala se o usuário sair
+
+    Speech.stop();
+
     try {
-      if (player) {
-        player.pause();
-      }
-    } catch (e) {
-      console.log("Audio release safe catch");
-    }
+      player?.pause();
+    } catch { }
     setFlash(false);
   };
 
+  /* =========================
+     EFFECTS INIT
+  ========================== */
   useEffect(() => {
     player.loop = true;
     player.play();
 
-    // Loop de Hardware: Flash + Vibração Intensa
     alertInterval.current = setInterval(() => {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      Haptics.notificationAsync(
+        Haptics.NotificationFeedbackType.Error
+      );
       setFlash((prev) => !prev);
     }, 400);
 
-    // Animação de Pulso (Foco Visual)
     Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
@@ -61,7 +76,6 @@ export default function AlertScreen() {
       ]),
     ).start();
 
-    // Efeito Scanline (Interferência)
     Animated.loop(
       Animated.timing(overlayAnim, {
         toValue: 1,
@@ -70,38 +84,51 @@ export default function AlertScreen() {
       }),
     ).start();
 
-    return () => stopHardwareActions();
+    return stopHardwareActions;
   }, []);
 
+  /* =========================
+     PROTOCOL OPEN
+  ========================== */
   const handleOpenProtocol = () => {
     stopHardwareActions();
     setIsModalVisible(true);
 
-    // PCD: Inicia leitura automática do protocolo de emergência
-    const message =
-      "Atenção. Protocolo de evacuação ativado. Local: Setor de Britagem Norte. Motivo: Instabilidade de Talude. Dirija-se imediatamente ao Ponto de Encontro B.";
-    Speech.speak(message, { language: "pt-BR", rate: 0.9 });
+    Speech.speak(
+      "Atenção. Protocolo de evacuação ativado. Dirija-se imediatamente ao ponto de encontro.",
+      { language: "pt-BR", rate: 0.9 }
+    );
   };
 
+  /* =========================
+     RENDER
+  ========================== */
+
+  const backgroundColor = flash
+    ? theme.danger
+    : theme.background;
+
   return (
-    <View
-      style={[
-        styles.container,
-        { backgroundColor: flash ? "#D92D20" : "#000" },
-      ]}
-    >
+    <View style={[styles.container, { backgroundColor }]}>
+      {/* SCANLINE */}
       <Animated.View
         style={[
           styles.scanline,
           {
-            translateY: overlayAnim.interpolate({
-              inputRange: [0, 1],
-              outputRange: [-200, 1000],
-            }),
+            backgroundColor: theme.text + "20",
+            transform: [
+              {
+                translateY: overlayAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [-200, 1000],
+                }),
+              },
+            ],
           },
         ]}
       />
 
+      {/* ALERT CONTENT */}
       <Animated.View
         style={{
           transform: [{ scale: pulseAnim }],
@@ -109,78 +136,165 @@ export default function AlertScreen() {
           zIndex: 10,
         }}
       >
-        <Ionicons name="warning" size={120} color="#FFF" />
-        <Text style={styles.alertSubtitle}>PROTOCOLO CRÍTICO</Text>
-        <Text style={styles.alertTitle}>EVACUAÇÃO</Text>
-        <View style={styles.dangerBadge}>
-          <Text style={styles.dangerText}>CONTRASTE MÁXIMO ATIVADO</Text>
+        <Ionicons
+          name="warning"
+          size={120}
+          color={theme.text}
+        />
+
+        <Text
+          style={[
+            styles.alertSubtitle,
+            { color: theme.text },
+          ]}
+        >
+          PROTOCOLO CRÍTICO
+        </Text>
+
+        <Text
+          style={[
+            styles.alertTitle,
+            { color: theme.text },
+          ]}
+        >
+          EVACUAÇÃO
+        </Text>
+
+        <View
+          style={[
+            styles.dangerBadge,
+            {
+              backgroundColor: theme.card,
+              borderColor: theme.border,
+            },
+          ]}
+        >
+          <Text
+            style={[
+              styles.dangerText,
+              { color: theme.primary },
+            ]}
+          >
+            ALERTA ATIVO
+          </Text>
         </View>
       </Animated.View>
 
+      {/* BOTÃO PRINCIPAL */}
       <View style={styles.bottomContainer}>
         <Button
           title="ABRIR PROTOCOLO"
           icon="shield-checkmark"
           onPress={handleOpenProtocol}
-          variantStyle={styles.mainButton}
-          textStyle={{ color: "#000", fontWeight: "900", fontSize: 18 }}
-          accessibilityLabel="Abrir instruções de protocolo e rota de fuga"
+          variantStyle={{
+            backgroundColor: theme.primary,
+            height: 75,
+            borderRadius: 16,
+          }}
+          textStyle={{
+            color: theme.background,
+            fontWeight: "900",
+            fontSize: 18,
+          }}
         />
       </View>
 
-      <Modal visible={isModalVisible} animationType="slide" transparent={true}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+      {/* MODAL */}
+      <Modal
+        visible={isModalVisible}
+        animationType="slide"
+        transparent
+      >
+        <View
+          style={[
+            styles.modalOverlay,
+            { backgroundColor: theme.background + "F2" },
+          ]}
+        >
+          <View
+            style={[
+              styles.modalContent,
+              {
+                backgroundColor: theme.card,
+                borderColor: theme.border,
+              },
+            ]}
+          >
             <View style={styles.modalHeader}>
-              <Ionicons name="business" size={28} color="#D92D20" />
-              <Text style={styles.modalTitle}>MMI MINERADORA</Text>
+              <Ionicons
+                name="business"
+                size={28}
+                color={theme.primary}
+              />
+              <Text
+                style={[
+                  styles.modalTitle,
+                  { color: theme.text },
+                ]}
+              >
+                MMI MINERADORA
+              </Text>
             </View>
 
-            <Text style={styles.modalSub}>Instruções de Emergência</Text>
-            <View style={styles.divider} />
+            <Text
+              style={[
+                styles.modalSub,
+                { color: theme.text },
+              ]}
+            >
+              Instruções de Emergência
+            </Text>
 
-            <View style={styles.infoRow}>
-              {[
-                {
-                  label: "Local",
-                  val: "Setor de Britagem Norte",
-                  icon: "location",
-                },
-                {
-                  label: "Motivo",
-                  val: "Instabilidade de Talude",
-                  icon: "alert-circle",
-                },
-                { label: "Rota", val: "Ponto de Encontro B", icon: "walk" },
-              ].map((item, i) => (
-                <View
-                  key={i}
-                  style={styles.infoItem}
-                  accessible={true}
-                  accessibilityLabel={`${item.label}: ${item.val}`}
+            <View
+              style={[
+                styles.divider,
+                { backgroundColor: theme.border },
+              ]}
+            />
+
+            {[
+              { label: "Local", val: "Setor Norte" },
+              { label: "Motivo", val: "Instabilidade" },
+              { label: "Rota", val: "Ponto B" },
+            ].map((item, i) => (
+              <View
+                key={i}
+                style={[
+                  styles.infoItem,
+                  {
+                    backgroundColor: theme.background,
+                    borderColor: theme.border,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.infoText,
+                    { color: theme.text },
+                  ]}
                 >
-                  <Ionicons
-                    name={item.icon as any}
-                    size={22}
-                    color="#D92D20"
-                    style={{ marginRight: 12 }}
-                  />
-                  <Text style={styles.infoText}>
-                    <Text style={styles.bold}>{item.label}:</Text> {item.val}
-                  </Text>
-                </View>
-              ))}
-            </View>
+                  <Text style={{ fontWeight: "900" }}>
+                    {item.label}:
+                  </Text>{" "}
+                  {item.val}
+                </Text>
+              </View>
+            ))}
 
             <Button
               title="OUVIR NOVAMENTE"
               icon="volume-high"
-              variantStyle={{ marginTop: 20, backgroundColor: "#f1f5f9" }}
-              textStyle={{ color: "#334155" }}
+              variantStyle={{
+                marginTop: 20,
+                backgroundColor: theme.card,
+                borderWidth: 1,
+                borderColor: theme.border,
+              }}
+              textStyle={{ color: theme.text }}
               onPress={() =>
                 Speech.speak(
-                  "Local: Britagem Norte. Motivo: Instabilidade. Rota: Ponto de Encontro B.",
-                  { language: "pt-BR" },
+                  "Repetindo instruções de evacuação.",
+                  { language: "pt-BR" }
                 )
               }
             />
@@ -188,7 +302,14 @@ export default function AlertScreen() {
             <Button
               title="ENCERRAR ALERTA"
               icon="log-out"
-              variantStyle={{ marginTop: 12, backgroundColor: "#1e293b" }}
+              variantStyle={{
+                marginTop: 12,
+                backgroundColor: theme.danger,
+              }}
+              textStyle={{
+                color: theme.background,
+                fontWeight: "700",
+              }}
               onPress={() => {
                 setIsModalVisible(false);
                 router.replace("/");
@@ -209,6 +330,10 @@ export default function AlertScreen() {
   );
 }
 
+/* =========================
+   ESTILOS BASE
+========================= */
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -220,34 +345,27 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: "100%",
     height: 120,
-    backgroundColor: "rgba(255,255,255,0.15)",
     zIndex: 5,
   },
   alertSubtitle: {
-    color: "#FFF",
     fontSize: 18,
     fontWeight: "700",
     letterSpacing: 4,
     marginTop: 20,
   },
   alertTitle: {
-    color: "#fff",
     fontSize: 58,
     fontWeight: "900",
     textAlign: "center",
-    lineHeight: 60,
   },
   dangerBadge: {
-    backgroundColor: "#000",
     paddingHorizontal: 16,
     paddingVertical: 8,
     marginTop: 20,
-    borderRadius: 4,
+    borderRadius: 6,
     borderWidth: 2,
-    borderColor: "#FFF",
   },
   dangerText: {
-    color: "#FFF",
     fontWeight: "900",
     fontSize: 12,
     letterSpacing: 1,
@@ -259,18 +377,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     zIndex: 11,
   },
-  mainButton: { backgroundColor: "#FFF", height: 75, borderRadius: 16 },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.95)",
     justifyContent: "center",
     padding: 20,
   },
   modalContent: {
-    backgroundColor: "#fff",
     borderRadius: 28,
     padding: 24,
-    elevation: 20,
+    borderWidth: 1,
   },
   modalHeader: {
     flexDirection: "row",
@@ -278,26 +393,33 @@ const styles = StyleSheet.create({
     gap: 12,
     marginBottom: 8,
   },
-  modalTitle: { fontSize: 24, fontWeight: "900", color: "#0f172a" },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: "900",
+  },
   modalSub: {
     fontSize: 14,
-    color: "#64748b",
     fontWeight: "700",
     textTransform: "uppercase",
     letterSpacing: 1,
   },
-  divider: { height: 2, backgroundColor: "#f1f5f9", marginVertical: 20 },
-  infoRow: { gap: 12 },
+  divider: {
+    height: 2,
+    marginVertical: 20,
+  },
   infoItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f8fafc",
     padding: 18,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: "#e2e8f0",
+    marginBottom: 12,
   },
-  infoText: { fontSize: 16, color: "#334155", flex: 1 },
-  bold: { fontWeight: "900", color: "#000" },
-  hiddenCamera: { position: "absolute", width: 1, height: 1, opacity: 0 },
+  infoText: {
+    fontSize: 16,
+  },
+  hiddenCamera: {
+    position: "absolute",
+    width: 1,
+    height: 1,
+    opacity: 0,
+  },
 });

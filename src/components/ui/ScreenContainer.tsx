@@ -3,18 +3,20 @@ import React from "react";
 import {
   Platform,
   ScrollView,
+  StyleProp,
   StyleSheet,
   View,
   ViewStyle,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { globalStyles as g } from "../../styles/globalStyles";
+
+import { useTheme } from "../../context/ThemeContext";
 
 interface ScreenContainerProps {
   children: React.ReactNode;
   withScroll?: boolean;
   isEmergency?: boolean;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 }
 
 export const ScreenContainer = ({
@@ -23,52 +25,71 @@ export const ScreenContainer = ({
   isEmergency = false,
   style,
 }: ScreenContainerProps) => {
-  // Cores dinâmicas para feedback imediato
+  const { theme, isHighContrast } = useTheme();
+
+  /*
+    🔴 EMERGÊNCIA sempre tem prioridade visual.
+    Se estiver em emergência, ignoramos o tema.
+  */
   const containerBackground = isEmergency
-    ? "#450A0A" // Fundo vermelho escuro para emergência (melhor contraste para texto branco)
-    : g.container.backgroundColor;
+    ? "#450A0A"
+    : theme.background;
 
   const ContentWrapper = withScroll ? ScrollView : View;
 
   return (
     <SafeAreaView
-      style={[g.container, { backgroundColor: containerBackground }, style]}
-      // 'bottom' é omitido para permitir que o conteúdo flua atrás de barras de navegação transparentes
+      style={[
+        styles.container,
+        { backgroundColor: containerBackground },
+        style,
+      ]}
       edges={["top", "left", "right"]}
     >
-      {/* A StatusBar 'light' em emergência e 'dark' no padrão garante que 
-        os ícones do sistema (relógio, wifi) continuem visíveis.
-      */}
       <StatusBar
-        style={isEmergency ? "light" : "dark"}
-        animated={true}
-        backgroundColor={containerBackground} // Importante para Android
+        style={isEmergency || isHighContrast ? "light" : "dark"}
+        animated
+        backgroundColor={containerBackground}
       />
 
       <ContentWrapper
         style={styles.flex}
-        // bounce: false evita aquele efeito de 'mola' que pode desorientar em emergências
-        bounces={!isEmergency}
-        contentContainerStyle={[
-          withScroll ? styles.scrollContent : styles.flex,
-          isEmergency && { justifyContent: "center" }, // Centraliza o alerta se for emergência
-        ]}
-        showsVerticalScrollIndicator={false}
-        // Melhora a performance de rolagem em listas complexas
-        scrollEventThrottle={16}
+        {...(withScroll && {
+          bounces: !isEmergency,
+          contentContainerStyle: [
+            styles.scrollContent,
+            isEmergency && { justifyContent: "center" },
+          ],
+          showsVerticalScrollIndicator: false,
+          scrollEventThrottle: 16,
+        })}
       >
-        {children}
+        {!withScroll && (
+          <View
+            style={[
+              styles.flex,
+              isEmergency && { justifyContent: "center" },
+            ]}
+          >
+            {children}
+          </View>
+        )}
+
+        {withScroll && children}
       </ContentWrapper>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   flex: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: Platform.OS === "ios" ? 40 : 20, // Padding dinâmico para a barra inferior
+    paddingBottom: Platform.OS === "ios" ? 40 : 20,
   },
 });

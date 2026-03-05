@@ -7,7 +7,7 @@ import { Text, View } from "react-native";
 import {
   AlertSoundHandle,
   AlertSoundPlayer,
-} from "@/components/ui/AlertSoundPlayer";
+} from "@/components/system/AlertSoundPlayer";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ScreenContainer } from "@/components/ui/ScreenContainer";

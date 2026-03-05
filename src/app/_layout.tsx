@@ -1,3 +1,6 @@
+import { TorchController } from "@/components/system/TorchController";
+import { ThemeProvider, useTheme } from "@/context/ThemeContext";
+import { TorchProvider } from "@/context/TorchProvider";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -5,28 +8,26 @@ import { useEffect } from "react";
 import { View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-import { ThemeProvider, useTheme } from "@/context/ThemeContext";
-
 SplashScreen.preventAutoHideAsync();
 
-/*
-  Componente interno que consome o tema.
-  Separado para que o Provider envolva tudo corretamente.
-*/
-function ThemedLayout() {
+/**
+ * Layout interno que consome o tema.
+ * TorchProvider fica aqui para envolver TODAS as telas.
+ */
+function AppLayout() {
   const { theme, isHighContrast } = useTheme();
 
   return (
-    <>
-      {/* StatusBar dinâmica baseada no tema */}
-      <StatusBar
-        style={isHighContrast ? "light" : "dark"}
-        backgroundColor={theme.background}
-        translucent={false}
-      />
-
-      {/* Background global real do app */}
+    <TorchProvider>
       <View style={{ flex: 1, backgroundColor: theme.background }}>
+        {/* StatusBar dinâmica baseada no tema */}
+        <StatusBar
+          style={isHighContrast ? "light" : "dark"}
+          backgroundColor={theme.background}
+          translucent={false}
+        />
+
+        {/* Stack principal */}
         <Stack
           screenOptions={{
             headerShown: false,
@@ -37,7 +38,10 @@ function ThemedLayout() {
             gestureEnabled: true,
           }}
         >
-          <Stack.Screen name="index" options={{ title: "Início" }} />
+          <Stack.Screen
+            name="index"
+            options={{ title: "Início" }}
+          />
 
           <Stack.Screen
             name="acionamento"
@@ -64,20 +68,31 @@ function ThemedLayout() {
             }}
           />
         </Stack>
+
+        {/* Controller global da lanterna (fora do Stack) */}
+        <TorchController />
       </View>
-    </>
+    </TorchProvider>
   );
 }
 
 export default function RootLayout() {
   useEffect(() => {
-    SplashScreen.hideAsync();
+    async function prepare() {
+      try {
+        // Aqui você poderia carregar fontes, assets etc
+      } finally {
+        await SplashScreen.hideAsync();
+      }
+    }
+
+    prepare();
   }, []);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider>
-        <ThemedLayout />
+        <AppLayout />
       </ThemeProvider>
     </GestureHandlerRootView>
   );

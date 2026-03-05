@@ -1,6 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useAudioPlayer } from "expo-audio";
-import { CameraView, useCameraPermissions } from "expo-camera";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import * as Speech from "expo-speech";
@@ -9,15 +8,16 @@ import { Animated, Modal, Text, View } from "react-native";
 
 import { Button } from "@/components/ui/Button";
 import { useTheme } from "@/context/ThemeContext";
+import { useTorch } from "@/context/TorchProvider";
 import { styles } from "@/styles/alertStyles";
 
 export default function AlertScreen() {
   const router = useRouter();
   const { theme } = useTheme();
+  const { set: setTorch } = useTorch();
 
-  const [permission] = useCameraPermissions();
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [flash, setFlash] = useState(false);
+  const [flashState, setFlashState] = useState(false);
 
   const player = useAudioPlayer(
     require("@/assets/sounds/metal_gear.mp3")
@@ -39,7 +39,8 @@ export default function AlertScreen() {
       player?.pause();
     } catch { }
 
-    setFlash(false);
+    setFlashState(false);
+    setTorch(false); // 🔥 desliga globalmente
   };
 
   useEffect(() => {
@@ -50,7 +51,12 @@ export default function AlertScreen() {
       Haptics.notificationAsync(
         Haptics.NotificationFeedbackType.Error
       );
-      setFlash((prev) => !prev);
+
+      setFlashState((prev) => {
+        const next = !prev;
+        setTorch(next); // 🔥 controla lanterna global
+        return next;
+      });
     }, 400);
 
     Animated.loop(
@@ -89,7 +95,7 @@ export default function AlertScreen() {
     );
   };
 
-  const backgroundColor = flash
+  const backgroundColor = flashState
     ? theme.danger
     : theme.background;
 
@@ -124,21 +130,11 @@ export default function AlertScreen() {
           color={theme.text}
         />
 
-        <Text
-          style={[
-            styles.alertSubtitle,
-            { color: theme.text },
-          ]}
-        >
+        <Text style={[styles.alertSubtitle, { color: theme.text }]}>
           PROTOCOLO CRÍTICO
         </Text>
 
-        <Text
-          style={[
-            styles.alertTitle,
-            { color: theme.text },
-          ]}
-        >
+        <Text style={[styles.alertTitle, { color: theme.text }]}>
           EVACUAÇÃO
         </Text>
 
@@ -210,12 +206,7 @@ export default function AlertScreen() {
               </Text>
             </View>
 
-            <Text
-              style={[
-                styles.modalSub,
-                { color: theme.text },
-              ]}
-            >
+            <Text style={[styles.modalSub, { color: theme.text }]}>
               Instruções de Emergência
             </Text>
 
@@ -286,6 +277,7 @@ export default function AlertScreen() {
                 { color: theme.background },
               ]}
               onPress={() => {
+                stopHardwareActions();
                 setIsModalVisible(false);
                 router.replace("/");
               }}
@@ -293,14 +285,6 @@ export default function AlertScreen() {
           </View>
         </View>
       </Modal>
-
-      {permission?.granted && (
-        <CameraView
-          style={styles.hiddenCamera}
-          enableTorch={flash}
-          facing="back"
-        />
-      )}
     </View>
   );
 }

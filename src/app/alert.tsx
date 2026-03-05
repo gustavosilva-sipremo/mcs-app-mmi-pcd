@@ -4,8 +4,9 @@ import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import * as Speech from "expo-speech";
 import React, { useEffect, useRef, useState } from "react";
-import { Animated, Modal, Text, View } from "react-native";
+import { Animated, Text, View } from "react-native";
 
+import { EmergencyProtocolModal } from "@/components/alert/EmergencyProtocolModal";
 import { Button } from "@/components/ui/Button";
 import { useTheme } from "@/context/ThemeContext";
 import { useTorch } from "@/context/TorchProvider";
@@ -40,7 +41,7 @@ export default function AlertScreen() {
     } catch { }
 
     setFlashState(false);
-    setTorch(false); // 🔥 desliga globalmente
+    setTorch(false);
   };
 
   useEffect(() => {
@@ -54,7 +55,7 @@ export default function AlertScreen() {
 
       setFlashState((prev) => {
         const next = !prev;
-        setTorch(next); // 🔥 controla lanterna global
+        setTorch(next);
         return next;
       });
     }, 400);
@@ -174,117 +175,20 @@ export default function AlertScreen() {
         />
       </View>
 
-      <Modal visible={isModalVisible} animationType="slide" transparent>
-        <View
-          style={[
-            styles.modalOverlay,
-            { backgroundColor: theme.background + "F2" },
-          ]}
-        >
-          <View
-            style={[
-              styles.modalContent,
-              {
-                backgroundColor: theme.card,
-                borderColor: theme.border,
-              },
-            ]}
-          >
-            <View style={styles.modalHeader}>
-              <Ionicons
-                name="business"
-                size={28}
-                color={theme.primary}
-              />
-              <Text
-                style={[
-                  styles.modalTitle,
-                  { color: theme.text },
-                ]}
-              >
-                MMI MINERADORA
-              </Text>
-            </View>
-
-            <Text style={[styles.modalSub, { color: theme.text }]}>
-              Instruções de Emergência
-            </Text>
-
-            <View
-              style={[
-                styles.divider,
-                { backgroundColor: theme.border },
-              ]}
-            />
-
-            {[
-              { label: "Local", val: "Setor Norte" },
-              { label: "Motivo", val: "Instabilidade" },
-              { label: "Rota", val: "Ponto B" },
-            ].map((item, i) => (
-              <View
-                key={i}
-                style={[
-                  styles.infoItem,
-                  {
-                    backgroundColor: theme.background,
-                    borderColor: theme.border,
-                  },
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.infoText,
-                    { color: theme.text },
-                  ]}
-                >
-                  <Text style={{ fontWeight: "900" }}>
-                    {item.label}:
-                  </Text>{" "}
-                  {item.val}
-                </Text>
-              </View>
-            ))}
-
-            <Button
-              title="OUVIR NOVAMENTE"
-              icon="volume-high"
-              variantStyle={[
-                styles.secondaryButton,
-                {
-                  backgroundColor: theme.card,
-                  borderColor: theme.border,
-                },
-              ]}
-              textStyle={{ color: theme.text }}
-              onPress={() =>
-                Speech.speak(
-                  "Repetindo instruções de evacuação.",
-                  { language: "pt-BR" }
-                )
-              }
-            />
-
-            <Button
-              title="ENCERRAR ALERTA"
-              icon="log-out"
-              variantStyle={[
-                styles.dangerButton,
-                { backgroundColor: theme.danger },
-              ]}
-              textStyle={[
-                styles.dangerButtonText,
-                { color: theme.background },
-              ]}
-              onPress={() => {
-                stopHardwareActions();
-                setIsModalVisible(false);
-                router.replace("/");
-              }}
-            />
-          </View>
-        </View>
-      </Modal>
+      <EmergencyProtocolModal
+        visible={isModalVisible}
+        onRepeat={() =>
+          Speech.speak(
+            "Repetindo instruções de evacuação.",
+            { language: "pt-BR" }
+          )
+        }
+        onClose={() => {
+          stopHardwareActions();
+          setIsModalVisible(false);
+          router.replace("/");
+        }}
+      />
     </View>
   );
 }

@@ -7,7 +7,6 @@ import {
   Dimensions,
   Easing,
   PanResponder,
-  StyleSheet,
   Text,
   View,
 } from "react-native";
@@ -17,15 +16,18 @@ import { Card } from "@/components/ui/Card";
 import { ScreenContainer } from "@/components/ui/ScreenContainer";
 import { useTheme } from "@/context/ThemeContext";
 
+import {
+  BUTTON_SIZE,
+  HORIZONTAL_PADDING,
+  styles,
+  TRACK_PADDING,
+} from "@/styles/acionamentoStyles";
+
 /* =========================
-   CONSTANTES
+   CONSTANTES DINÂMICAS
 ========================= */
 
 const { width } = Dimensions.get("window");
-
-const BUTTON_SIZE = 64;
-const HORIZONTAL_PADDING = 24;
-const TRACK_PADDING = 8;
 
 const SLIDE_WIDTH = width - HORIZONTAL_PADDING * 2;
 const DISTANCE = SLIDE_WIDTH - BUTTON_SIZE - TRACK_PADDING * 2;
@@ -190,7 +192,6 @@ export default function AcionamentoScreen() {
             accessibilityLabel="Deslizar para disparar alerta"
             accessibilityHint="Deslize totalmente para a direita para confirmar"
           >
-            {/* FILL PROGRESSIVO */}
             <Animated.View
               style={[
                 styles.fill,
@@ -201,7 +202,6 @@ export default function AcionamentoScreen() {
               ]}
             />
 
-            {/* TEXTO */}
             <Animated.Text
               style={[
                 styles.slideText,
@@ -214,7 +214,6 @@ export default function AcionamentoScreen() {
               DESLIZE PARA DISPARAR
             </Animated.Text>
 
-            {/* BOTÃO */}
             <Animated.View
               style={[
                 styles.slideButton,
@@ -235,12 +234,13 @@ export default function AcionamentoScreen() {
 
           <Button
             title="Cancelar & Voltar"
-            variantStyle={{
-              marginTop: 40,
-              backgroundColor: theme.card,
-              borderWidth: 1,
-              borderColor: theme.border,
-            }}
+            variantStyle={[
+              styles.cancelButton,
+              {
+                backgroundColor: theme.card,
+                borderColor: theme.border,
+              },
+            ]}
             textStyle={{ color: theme.text }}
             onPress={() => router.back()}
           />
@@ -249,62 +249,3 @@ export default function AcionamentoScreen() {
     </ScreenContainer>
   );
 }
-
-/* =========================
-   ESTILOS
-========================= */
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    padding: HORIZONTAL_PADDING,
-  },
-
-  title: {
-    fontSize: 22,
-    fontWeight: "800",
-    textAlign: "center",
-    marginBottom: 8,
-  },
-
-  description: {
-    marginBottom: 32,
-    textAlign: "center",
-  },
-
-  slideTrack: {
-    width: "100%",
-    height: 80,
-    borderRadius: 40,
-    justifyContent: "center",
-    padding: TRACK_PADDING,
-    borderWidth: 2,
-    overflow: "hidden",
-  },
-
-  fill: {
-    position: "absolute",
-    left: 0,
-    top: 0,
-    bottom: 0,
-    borderRadius: 40,
-  },
-
-  slideText: {
-    position: "absolute",
-    alignSelf: "center",
-    fontSize: 14,
-    fontWeight: "800",
-    letterSpacing: 1,
-  },
-
-  slideButton: {
-    width: BUTTON_SIZE,
-    height: BUTTON_SIZE,
-    borderRadius: BUTTON_SIZE / 2,
-    justifyContent: "center",
-    alignItems: "center",
-    elevation: 5,
-  },
-});

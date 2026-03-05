@@ -3,7 +3,7 @@ import { useAudioPlayer } from "expo-audio";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import * as Speech from "expo-speech";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Animated, Text, View } from "react-native";
 
 import { EmergencyProtocolModal } from "@/components/alert/EmergencyProtocolModal";
@@ -19,6 +19,7 @@ export default function AlertScreen() {
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [flashState, setFlashState] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   const player = useAudioPlayer(
     require("@/assets/sounds/metal_gear.mp3")
@@ -26,23 +27,73 @@ export default function AlertScreen() {
 
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const overlayAnim = useRef(new Animated.Value(0)).current;
-  const alertInterval = useRef<any>(null);
 
-  const stopHardwareActions = () => {
+  const alertInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pulseLoop = useRef<Animated.CompositeAnimation | null>(null);
+  const overlayLoop = useRef<Animated.CompositeAnimation | null>(null);
+
+  /* ==============================
+     CONTROLE DE VOZ
+  ============================== */
+
+  const speakAlert = useCallback(
+    (alertData: {
+      level: string;
+      structure: string;
+      title: string;
+      message: string;
+    }) => {
+      if (isSpeaking) return;
+
+      setIsSpeaking(true);
+
+      Speech.stop();
+
+      const fullMessage = `
+${alertData.level}.
+Estrutura ${alertData.structure}.
+${alertData.title}.
+${alertData.message}
+`;
+
+      Speech.speak(fullMessage, {
+        language: "pt-BR",
+        rate: 0.85,
+        pitch: 1,
+        onDone: () => setIsSpeaking(false),
+        onStopped: () => setIsSpeaking(false),
+        onError: () => setIsSpeaking(false),
+      });
+    },
+    [isSpeaking]
+  );
+
+  /* ==============================
+     PARAR TUDO
+  ============================== */
+
+  const stopHardwareActions = useCallback(() => {
     if (alertInterval.current) {
       clearInterval(alertInterval.current);
       alertInterval.current = null;
     }
 
+    pulseLoop.current?.stop();
+    overlayLoop.current?.stop();
+
     Speech.stop();
 
     try {
-      player?.pause();
+      player.pause();
     } catch { }
 
     setFlashState(false);
     setTorch(false);
-  };
+  }, [player, setTorch]);
+
+  /* ==============================
+     INICIAR ALERTA
+  ============================== */
 
   useEffect(() => {
     player.loop = true;
@@ -53,14 +104,14 @@ export default function AlertScreen() {
         Haptics.NotificationFeedbackType.Error
       );
 
-      setFlashState((prev) => {
+      setFlashState(prev => {
         const next = !prev;
         setTorch(next);
         return next;
       });
     }, 400);
 
-    Animated.loop(
+    pulseLoop.current = Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
           toValue: 1.15,
@@ -73,27 +124,42 @@ export default function AlertScreen() {
           useNativeDriver: true,
         }),
       ])
-    ).start();
+    );
 
-    Animated.loop(
+    pulseLoop.current.start();
+
+    overlayLoop.current = Animated.loop(
       Animated.timing(overlayAnim, {
         toValue: 1,
         duration: 2500,
         useNativeDriver: true,
       })
-    ).start();
+    );
+
+    overlayLoop.current.start();
 
     return stopHardwareActions;
-  }, []);
+  }, [player, pulseAnim, overlayAnim, setTorch, stopHardwareActions]);
+
+  /* ==============================
+     ABRIR PROTOCOLO
+  ============================== */
 
   const handleOpenProtocol = () => {
     stopHardwareActions();
     setIsModalVisible(true);
 
-    Speech.speak(
-      "Atenção. Protocolo de evacuação ativado. Dirija-se imediatamente ao ponto de encontro.",
-      { language: "pt-BR", rate: 0.9 }
-    );
+    const alertPayload = {
+      level: "Nível 3",
+      structure: "B1 Ipê",
+      title: "Ruptura da Barragem",
+      message: `Alerta de Emergência Nível 3.
+Ruptura da barragem B1 Ipê Mina iminente ou ocorrendo.
+Dar início às Ações de Emergência em Nível 3.
+Providenciar os recursos necessários para atendimento.`,
+    };
+
+    speakAlert(alertPayload);
   };
 
   const backgroundColor = flashState
@@ -177,14 +243,20 @@ export default function AlertScreen() {
 
       <EmergencyProtocolModal
         visible={isModalVisible}
-        onRepeat={() =>
-          Speech.speak(
-            "Repetindo instruções de evacuação.",
-            { language: "pt-BR" }
-          )
-        }
+        alertData={{
+          level: "Nível 3",
+          structure: "B1 Ipê",
+          title: "Ruptura da Barragem",
+          message: `Alerta de Emergência Nível 3.
+Ruptura da barragem B1 Ipê Mina iminente ou ocorrendo.
+Dar início às Ações de Emergência em Nível 3.
+Providenciar os recursos necessários para atendimento.`,
+        }}
         onClose={() => {
-          stopHardwareActions();
+          setIsModalVisible(false);
+          router.replace("/");
+        }}
+        onAcknowledge={() => {
           setIsModalVisible(false);
           router.replace("/");
         }}

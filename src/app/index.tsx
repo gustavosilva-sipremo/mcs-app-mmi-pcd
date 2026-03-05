@@ -1,15 +1,14 @@
 import LogoMMI from "@/assets/images/logos/logo_mmi.svg";
-import * as Battery from "expo-battery";
-import { Camera, CameraView } from "expo-camera";
-import Constants from "expo-constants";
-import { useRouter } from "expo-router";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Alert, Text, View } from "react-native";
-
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ScreenContainer } from "@/components/ui/ScreenContainer";
+import { TorchButton } from "@/components/ui/TorchButton";
+import * as Battery from "expo-battery";
+import Constants from "expo-constants";
+import { useRouter } from "expo-router";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Alert, Text, View } from "react-native";
 
 import { useTheme } from "@/context/ThemeContext";
 import { indexStyles as styles } from "@/styles/indexStyles";
@@ -21,7 +20,6 @@ export default function Index() {
   const { theme, toggleTheme, isHighContrast } = useTheme();
 
   const [batteryLevel, setBatteryLevel] = useState<number | null>(null);
-  const [isTorchOn, setIsTorchOn] = useState(false);
 
   /* =========================
      BATTERY
@@ -57,24 +55,6 @@ export default function Index() {
     if (batteryLevel === null) return "info";
     return batteryLevel > 0.2 ? "info" : "warning";
   }, [batteryLevel]);
-
-  /* =========================
-     TORCH
-  ========================== */
-
-  const toggleTorch = useCallback(async () => {
-    const { granted } = await Camera.requestCameraPermissionsAsync();
-
-    if (!granted) {
-      Alert.alert(
-        "Acesso Negado",
-        "A permissão de câmera é obrigatória para utilizar a lanterna de serviço."
-      );
-      return;
-    }
-
-    setIsTorchOn((prev) => !prev);
-  }, []);
 
   /* =========================
      NAVIGATION
@@ -166,26 +146,7 @@ export default function Index() {
               onPress={goToTests}
             />
 
-            <Button
-              title={isTorchOn ? "Desligar Lanterna" : "Lanterna de Serviço"}
-              icon={isTorchOn ? "flashlight" : "flashlight-outline"}
-              variantStyle={{
-                backgroundColor: isTorchOn
-                  ? theme.primary
-                  : theme.card,
-                borderWidth: 1,
-                borderColor: theme.border,
-              }}
-              textStyle={{
-                color: isTorchOn ? "#000" : theme.text,
-              }}
-              onPress={toggleTorch}
-              accessibilityLabel={
-                isTorchOn
-                  ? "Desligar lanterna"
-                  : "Ligar lanterna de serviço"
-              }
-            />
+            <TorchButton />
 
             <Button
               title={
@@ -220,15 +181,6 @@ export default function Index() {
           Versão {appVersion}
         </Text>
       </View>
-
-      {/* CAMERA (Torch Controller) */}
-      {isTorchOn && (
-        <CameraView
-          style={styles.hiddenCamera}
-          enableTorch
-          facing="back"
-        />
-      )}
     </ScreenContainer>
   );
 }

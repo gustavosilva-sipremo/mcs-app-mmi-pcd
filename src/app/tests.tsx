@@ -1,27 +1,23 @@
-import { CameraView, useCameraPermissions } from "expo-camera";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import * as Speech from "expo-speech";
-import React, { useCallback, useRef, useState } from "react";
-import { Alert, Text, View } from "react-native";
+import React, { useCallback, useRef } from "react";
+import { Text, View } from "react-native";
 
 import {
   AlertSoundHandle,
   AlertSoundPlayer,
 } from "@/components/ui/AlertSoundPlayer";
-
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ScreenContainer } from "@/components/ui/ScreenContainer";
+import { TorchButton } from "@/components/ui/TorchButton";
 import { useTheme } from "@/context/ThemeContext";
 import { testsStyles as styles } from "@/styles/testsStyles";
 
 export default function TestsScreen() {
   const router = useRouter();
   const { theme, isHighContrast } = useTheme();
-
-  const [isFlashOn, setIsFlashOn] = useState(false);
-  const [permission, requestPermission] = useCameraPermissions();
 
   const alertSoundRef = useRef<AlertSoundHandle>(null);
 
@@ -54,32 +50,12 @@ export default function TestsScreen() {
   }, []);
 
   /* =========================
-     AUDIO (NOVO)
+     AUDIO
   ========================== */
 
   const playTestSound = useCallback(() => {
     alertSoundRef.current?.play();
   }, []);
-
-  /* =========================
-     FLASH
-  ========================== */
-
-  const toggleFlash = useCallback(async () => {
-    if (!permission?.granted) {
-      const { granted } = await requestPermission();
-      if (!granted) {
-        Alert.alert(
-          "Permissão necessária",
-          "O acesso à câmera é obrigatório para o flash."
-        );
-        return;
-      }
-    }
-
-    setIsFlashOn((prev) => !prev);
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-  }, [permission, requestPermission]);
 
   /* =========================
      RENDER
@@ -150,26 +126,9 @@ export default function TestsScreen() {
               onPress={playTestSound}
             />
 
-            <Button
-              title={isFlashOn ? "Desligar Flash" : "Testar Flash"}
-              icon={isFlashOn ? "flashlight" : "flashlight-outline"}
-              variantStyle={
-                isFlashOn
-                  ? styles.btnFlashActive
-                  : {
-                    backgroundColor: theme.card,
-                    borderWidth: 1,
-                    borderColor: theme.border,
-                  }
-              }
-              textStyle={{
-                color: isFlashOn
-                  ? isHighContrast
-                    ? "#000"
-                    : "#FFF"
-                  : theme.text,
-              }}
-              onPress={toggleFlash}
+            <TorchButton
+              inactiveLabel="Testar Flash"
+              activeLabel="Desligar Flash"
             />
 
             <View
@@ -194,14 +153,6 @@ export default function TestsScreen() {
         </Card>
 
         <AlertSoundPlayer ref={alertSoundRef} />
-
-        {permission?.granted && (
-          <CameraView
-            style={styles.hiddenCamera}
-            enableTorch={isFlashOn}
-            facing="back"
-          />
-        )}
       </View>
     </ScreenContainer>
   );

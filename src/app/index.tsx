@@ -4,13 +4,13 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ScreenContainer } from "@/components/ui/ScreenContainer";
 import { TorchButton } from "@/components/ui/TorchButton";
-import * as Battery from "expo-battery";
 import Constants from "expo-constants";
 import { useRouter } from "expo-router";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Alert, Text, View } from "react-native";
 
 import { useTheme } from "@/context/ThemeContext";
+import { hardwareService } from "@/services/HardwareService";
 import { indexStyles as styles } from "@/styles/indexStyles";
 
 export default function Index() {
@@ -19,46 +19,47 @@ export default function Index() {
 
   const { theme, toggleTheme, isHighContrast } = useTheme();
 
-  const [batteryLevel, setBatteryLevel] = useState<number | null>(null);
+  const [batteryPercentage, setBatteryPercentage] = useState<number | null>(null);
 
   /* =========================
      BATTERY
-  ========================== */
+  ========================= */
 
   useEffect(() => {
-    const loadBatteryLevel = async () => {
-      const level = await Battery.getBatteryLevelAsync();
-      setBatteryLevel(level);
+    hardwareService.initBattery();
+
+    const loadBattery = async () => {
+      const percent = hardwareService.getBatteryPercentage();
+      setBatteryPercentage(percent);
     };
 
-    loadBatteryLevel();
+    loadBattery();
 
-    const subscription = Battery.addBatteryLevelListener(({ batteryLevel }) => {
-      setBatteryLevel(batteryLevel);
+    const unsubscribe = hardwareService.subscribeBattery(level => {
+      const percent = Math.round(level * 100);
 
-      if (batteryLevel <= 0.15) {
+      setBatteryPercentage(percent);
+
+      if (level <= 0.15) {
         Alert.alert(
           "Bateria Baixa",
-          "O uso do flash em emergências pode ser limitado pelo sistema de economia de energia."
+          "O uso do flash pode ser limitado pelo sistema."
         );
       }
     });
 
-    return () => subscription.remove();
+    return unsubscribe;
   }, []);
 
-  const batteryPercentage = useMemo(() => {
-    return batteryLevel !== null ? Math.round(batteryLevel * 100) : null;
-  }, [batteryLevel]);
-
-  const batteryVariant = useMemo(() => {
-    if (batteryLevel === null) return "info";
-    return batteryLevel > 0.2 ? "info" : "warning";
-  }, [batteryLevel]);
+  const batteryVariant = batteryPercentage === null
+    ? "info"
+    : batteryPercentage > 20
+      ? "info"
+      : "warning";
 
   /* =========================
      NAVIGATION
-  ========================== */
+  ========================= */
 
   const goToAcionamento = useCallback(() => {
     router.push("/acionamento");
@@ -70,7 +71,7 @@ export default function Index() {
 
   /* =========================
      RENDER
-  ========================== */
+  ========================= */
 
   return (
     <ScreenContainer
@@ -84,7 +85,6 @@ export default function Index() {
             borderColor: theme.border,
           }}
         >
-          {/* HEADER */}
           <View style={styles.headerRow}>
             <Badge
               title={
@@ -93,15 +93,11 @@ export default function Index() {
                   : "Lendo Bateria..."
               }
               variant={batteryVariant}
-              accessibilityLabel={`Nível de bateria atual: ${batteryPercentage ?? 0
-                } por cento`}
             />
           </View>
 
-          {/* LOGO */}
           <LogoMMI width={86} height={86} style={styles.logo} />
 
-          {/* TITLE */}
           <Text style={[styles.title, { color: theme.text }]}>
             MMI{" "}
             <Text style={{ color: theme.primary }}>
@@ -109,7 +105,6 @@ export default function Index() {
             </Text>
           </Text>
 
-          {/* DESCRIPTION */}
           <Text style={[styles.description, { color: theme.text }]}>
             Receba alertas importantes e
             <Text style={{ fontWeight: "800", color: theme.primary }}>
@@ -117,7 +112,6 @@ export default function Index() {
             </Text>
           </Text>
 
-          {/* BUTTONS */}
           <View style={styles.buttonGap}>
             <Button
               title="Simular Acionamento"
@@ -127,8 +121,6 @@ export default function Index() {
                 height: 70,
               }}
               textStyle={{ color: "#FFF" }}
-              accessibilityLabel="Iniciar simulação de alerta de emergência"
-              accessibilityHint="Abre a tela de ativação do protocolo de pânico"
               onPress={goToAcionamento}
             />
 
@@ -141,8 +133,6 @@ export default function Index() {
                 borderColor: theme.border,
               }}
               textStyle={{ color: theme.text }}
-              accessibilityLabel="Laboratório de testes"
-              accessibilityHint="Verifica o funcionamento dos sensores de hardware"
               onPress={goToTests}
             />
 
@@ -165,13 +155,11 @@ export default function Index() {
                 fontWeight: "700",
               }}
               onPress={toggleTheme}
-              accessibilityLabel="Alternar tema de alto contraste"
             />
           </View>
         </Card>
       </View>
 
-      {/* FOOTER */}
       <View style={styles.footerContainer}>
         <Text style={[styles.footerText, { color: theme.text, opacity: 0.7 }]}>
           © 2026 Sipremo MCS

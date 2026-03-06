@@ -15,6 +15,7 @@ export function TorchController() {
                 height: 1,
                 opacity: 0,
             }}
+            pointerEvents="none"
             enableTorch={isOn}
             facing="back"
         />

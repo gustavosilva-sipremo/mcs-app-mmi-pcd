@@ -1,6 +1,4 @@
-import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import * as Speech from "expo-speech";
 import React, { useCallback, useRef } from "react";
 import { Text, View } from "react-native";
 
@@ -8,11 +6,15 @@ import {
   AlertSoundHandle,
   AlertSoundPlayer,
 } from "@/components/system/AlertSoundPlayer";
+
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ScreenContainer } from "@/components/ui/ScreenContainer";
 import { TorchButton } from "@/components/ui/TorchButton";
+
 import { useTheme } from "@/context/ThemeContext";
+import { hardwareService } from "@/services/HardwareService";
+
 import { testsStyles as styles } from "@/styles/testsStyles";
 
 export default function TestsScreen() {
@@ -25,24 +27,25 @@ export default function TestsScreen() {
      HAPTIC
   ========================== */
 
-  const handleVibration = useCallback(async (type: "success" | "error") => {
-    const feedback =
-      type === "success"
-        ? Haptics.NotificationFeedbackType.Success
-        : Haptics.NotificationFeedbackType.Error;
-
-    await Haptics.notificationAsync(feedback);
-  }, []);
+  const handleVibration = useCallback(
+    async (type: "success" | "error") => {
+      if (type === "success") {
+        await hardwareService.vibrateSuccess();
+      } else {
+        await hardwareService.vibrateError();
+      }
+    },
+    []
+  );
 
   /* =========================
      TTS
   ========================== */
 
   const testSpeech = useCallback(() => {
-    Speech.speak(
+    hardwareService.speak(
       "Teste de sintetizador de voz. Sistema de áudio da mineradora operando normalmente.",
       {
-        language: "pt-BR",
         rate: 0.9,
         pitch: 1.0,
       }
@@ -83,6 +86,7 @@ export default function TestsScreen() {
           </Text>
 
           <View style={styles.grid}>
+            {/* VIBRAÇÃO SUCESSO */}
             <Button
               title="Vibração Sucesso"
               icon="checkmark-circle-outline"
@@ -91,6 +95,7 @@ export default function TestsScreen() {
               onPress={() => handleVibration("success")}
             />
 
+            {/* VIBRAÇÃO ERRO */}
             <Button
               title="Vibração Erro"
               icon="close-circle-outline"
@@ -99,6 +104,7 @@ export default function TestsScreen() {
               onPress={() => handleVibration("error")}
             />
 
+            {/* TTS */}
             <Button
               title="Testar Voz (TTS)"
               icon="chatbubble-ellipses-outline"
@@ -114,6 +120,7 @@ export default function TestsScreen() {
               onPress={testSpeech}
             />
 
+            {/* ALERTA SONORO */}
             <Button
               title="Ouvir Alarme"
               icon="volume-high-outline"
@@ -126,11 +133,13 @@ export default function TestsScreen() {
               onPress={playTestSound}
             />
 
+            {/* FLASH */}
             <TorchButton
               inactiveLabel="Testar Flash"
               activeLabel="Desligar Flash"
             />
 
+            {/* DIVIDER */}
             <View
               style={[
                 styles.divider,
@@ -138,6 +147,7 @@ export default function TestsScreen() {
               ]}
             />
 
+            {/* VOLTAR */}
             <Button
               title="Voltar"
               icon="home-outline"
@@ -152,6 +162,7 @@ export default function TestsScreen() {
           </View>
         </Card>
 
+        {/* PLAYER DE ALERTA */}
         <AlertSoundPlayer ref={alertSoundRef} />
       </View>
     </ScreenContainer>

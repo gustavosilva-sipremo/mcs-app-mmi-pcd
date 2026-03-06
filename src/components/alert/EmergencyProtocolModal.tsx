@@ -1,9 +1,8 @@
 // src/components/alert/EmergencyProtocolModal.tsx
 
+import { hardwareService } from "@/services/HardwareService";
 import { Ionicons } from "@expo/vector-icons";
-import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import * as Speech from "expo-speech";
 import React, { useEffect, useState } from "react";
 import {
     AccessibilityInfo,
@@ -62,15 +61,9 @@ export function EmergencyProtocolModal({
 
         setIsSpeaking(true);
 
-        Speech.stop();
-
-        Speech.speak(alertData.message, {
-            language: "pt-BR",
+        hardwareService.speak(alertData.message, {
             rate: 0.85,
             pitch: 1,
-            onDone: () => setIsSpeaking(false),
-            onStopped: () => setIsSpeaking(false),
-            onError: () => setIsSpeaking(false),
         });
     };
 
@@ -91,11 +84,7 @@ export function EmergencyProtocolModal({
     ============================== */
 
     const handleAcknowledge = async () => {
-        Haptics.notificationAsync(
-            Haptics.NotificationFeedbackType.Success
-        );
-
-        Speech.stop();
+        await hardwareService.vibrateSuccess();
 
         onClose?.();
 

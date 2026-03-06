@@ -19,7 +19,6 @@ export const AlertSoundPlayer = forwardRef<AlertSoundHandle>(
 
         const play = useCallback(async () => {
             try {
-                await player.pause();
                 await player.seekTo(0);
                 await player.play();
             } catch {

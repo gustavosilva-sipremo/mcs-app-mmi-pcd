@@ -154,7 +154,7 @@ ${alertData.message}
       structure: "B1 Ipê",
       title: "Ruptura da Barragem",
       message: `Alerta de Emergência Nível 3.
-Ruptura da barragem B1 Ipê Mina iminente ou ocorrendo.
+Ruptura da barragem B1 Ipê Mina. Iminente ou ocorrendo.
 Dar início às Ações de Emergência em Nível 3.
 Providenciar os recursos necessários para atendimento.`,
     };
@@ -248,7 +248,7 @@ Providenciar os recursos necessários para atendimento.`,
           structure: "B1 Ipê",
           title: "Ruptura da Barragem",
           message: `Alerta de Emergência Nível 3.
-Ruptura da barragem B1 Ipê Mina iminente ou ocorrendo.
+Ruptura da barragem B1 Ipê Mina. Iminente ou ocorrendo.
 Dar início às Ações de Emergência em Nível 3.
 Providenciar os recursos necessários para atendimento.`,
         }}

@@ -1,3 +1,4 @@
+import { AudioPlayer } from "expo-audio";
 import * as Battery from "expo-battery";
 import * as Haptics from "expo-haptics";
 import * as Speech from "expo-speech";
@@ -13,7 +14,36 @@ class HardwareService {
   private batterySubscription: Battery.Subscription | null = null;
 
   /* =========================
-     ACTION GUARD (ANTI-SPAM)
+     AUDIO
+  ========================= */
+
+  private alertPlayer?: AudioPlayer;
+
+  registerAlertPlayer(player: AudioPlayer) {
+    this.alertPlayer = player;
+  }
+
+  async playAlertSound(loop = true) {
+    if (!this.alertPlayer) return;
+
+    try {
+      this.alertPlayer.loop = loop;
+      await this.alertPlayer.seekTo(0);
+      await this.alertPlayer.play();
+    } catch {}
+  }
+
+  stopAlertSound() {
+    if (!this.alertPlayer) return;
+
+    try {
+      this.alertPlayer.pause();
+      this.alertPlayer.seekTo(0);
+    } catch {}
+  }
+
+  /* =========================
+     ACTION GUARD
   ========================= */
 
   private canTrigger(): boolean {
@@ -75,7 +105,7 @@ class HardwareService {
   }
 
   /* =========================
-     BATTERY (CENTRALIZADO)
+     BATTERY
   ========================= */
 
   async initBattery() {

@@ -1,9 +1,8 @@
-// src/components/alert/EmergencyProtocolModal.tsx
-
 import { hardwareService } from "@/services/HardwareService";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import * as Speech from "expo-speech";
+import React, { useEffect, useMemo, useState } from "react";
 import {
     AccessibilityInfo,
     Modal,
@@ -14,7 +13,7 @@ import {
 
 import { Button } from "@/components/ui/Button";
 import { useTheme } from "@/context/ThemeContext";
-import { styles } from "@/styles/alertStyles";
+import { createStyles } from "@/styles/components/EmergencyProtocolModalStyles";
 
 export type EmergencyAlertData = {
     level: string;
@@ -39,36 +38,88 @@ export function EmergencyProtocolModal({
 }: Props) {
     const { theme } = useTheme();
     const router = useRouter();
+
     const [isSpeaking, setIsSpeaking] = useState(false);
+    const [isPaused, setIsPaused] = useState(false);
+    const [speechIndex, setSpeechIndex] = useState(0);
 
     /* ==============================
-       SEVERIDADE VISUAL
+       SEVERIDADE
     ============================== */
 
-    const severityColor =
-        alertData.level.includes("3")
-            ? theme.danger
-            : alertData.isEfni
-                ? theme.primary
-                : theme.border;
+    const severityColor = alertData.level.includes("3")
+        ? theme.danger
+        : alertData.isEfni
+            ? theme.primary
+            : theme.border;
+
+    const styles = useMemo(
+        () => createStyles(theme, severityColor),
+        [theme, severityColor]
+    );
+
+    const highContrastText =
+        theme.background === "#000000" ? "#FFFFFF" : theme.text;
 
     /* ==============================
-       FALA CONTROLADA
+       QUEBRAR TEXTO EM FRASES
     ============================== */
 
-    const speakMessage = () => {
-        if (isSpeaking) return;
+    const speechParts = useMemo(() => {
+        return alertData.message
+            .replace(/\n/g, " ")
+            .split(/(?<=[.!?])\s+/);
+    }, [alertData.message]);
 
-        setIsSpeaking(true);
+    /* ==============================
+       TTS CONTROLADO
+    ============================== */
 
-        hardwareService.speak(alertData.message, {
+    const speakNext = (index: number) => {
+        if (index >= speechParts.length) {
+            setIsSpeaking(false);
+            setIsPaused(false);
+            setSpeechIndex(0);
+            return;
+        }
+
+        setSpeechIndex(index);
+
+        Speech.speak(speechParts[index], {
+            language: "pt-BR",
             rate: 0.85,
             pitch: 1,
+
+            onDone: () => {
+                speakNext(index + 1);
+            },
+
+            onStopped: () => {
+                setIsSpeaking(false);
+            },
+
+            onError: () => {
+                setIsSpeaking(false);
+            },
         });
     };
 
+    const speakMessage = () => {
+        if (isSpeaking) {
+            Speech.stop();
+            setIsSpeaking(false);
+            setIsPaused(true);
+            return;
+        }
+
+        setIsSpeaking(true);
+        setIsPaused(false);
+
+        speakNext(speechIndex);
+    };
+
     /* ==============================
-       FOCO AUTOMÁTICO P/ LEITOR
+       ACESSIBILIDADE
     ============================== */
 
     useEffect(() => {
@@ -80,10 +131,25 @@ export function EmergencyProtocolModal({
     }, [visible]);
 
     /* ==============================
-       CONFIRMAÇÃO
+       RESET AO FECHAR
+    ============================== */
+
+    useEffect(() => {
+        if (!visible) {
+            Speech.stop();
+            setIsSpeaking(false);
+            setIsPaused(false);
+            setSpeechIndex(0);
+        }
+    }, [visible]);
+
+    /* ==============================
+       CONFIRMAR
     ============================== */
 
     const handleAcknowledge = async () => {
+        Speech.stop();
+
         await hardwareService.vibrateSuccess();
 
         onClose?.();
@@ -92,50 +158,43 @@ export function EmergencyProtocolModal({
     };
 
     /* ==============================
-       CORES ACESSÍVEIS
+       BOTÃO TTS
     ============================== */
 
-    const highContrastText =
-        theme.background === "#000000"
-            ? "#FFFFFF"
-            : theme.text;
+    const speakButtonTitle = isSpeaking
+        ? "PAUSAR ÁUDIO"
+        : isPaused
+            ? "CONTINUAR ÁUDIO"
+            : "OUVIR MENSAGEM";
+
+    const speakButtonIcon = isSpeaking
+        ? "pause"
+        : isPaused
+            ? "play"
+            : "volume-high";
+
+    /* ==============================
+       BADGE
+    ============================== */
+
+    const badgeText = alertData.isSimulation
+        ? "SIMULADO"
+        : alertData.isEfni
+            ? "EXERCÍCIO INTERNO - EFNI"
+            : "ALERTA OFICIAL";
 
     return (
-        <Modal
-            visible={visible}
-            animationType="slide"
-            transparent
-            accessibilityViewIsModal
-        >
-            <View
-                style={[
-                    styles.modalOverlay,
-                    { backgroundColor: "#000000CC" }, // fundo mais acessível
-                ]}
-            >
+        <Modal visible={visible} animationType="slide" transparent accessibilityViewIsModal>
+            <View style={styles.overlay}>
                 <View
-                    style={[
-                        styles.modalContent,
-                        {
-                            backgroundColor: theme.card,
-                            borderColor: severityColor,
-                            borderWidth: 3,
-                            borderRadius: 18,
-                            padding: 22,
-                        },
-                    ]}
+                    style={styles.container}
                     accessible
                     accessibilityRole="alert"
                     accessibilityLiveRegion="assertive"
                 >
                     {/* HEADER */}
-                    <View
-                        style={{
-                            flexDirection: "row",
-                            alignItems: "center",
-                            marginBottom: 16,
-                        }}
-                    >
+
+                    <View style={styles.header}>
                         <Ionicons
                             name="warning"
                             size={32}
@@ -143,13 +202,9 @@ export function EmergencyProtocolModal({
                             accessibilityIgnoresInvertColors
                         />
 
-                        <View style={{ marginLeft: 12, flex: 1 }}>
+                        <View style={styles.headerTextContainer}>
                             <Text
-                                style={{
-                                    fontSize: 20,
-                                    fontWeight: "900",
-                                    color: highContrastText,
-                                }}
+                                style={[styles.title, { color: highContrastText }]}
                                 allowFontScaling
                                 maxFontSizeMultiplier={1.6}
                             >
@@ -157,12 +212,7 @@ export function EmergencyProtocolModal({
                             </Text>
 
                             <Text
-                                style={{
-                                    fontSize: 14,
-                                    fontWeight: "700",
-                                    color: severityColor,
-                                    marginTop: 4,
-                                }}
+                                style={[styles.subtitle, { color: severityColor }]}
                                 allowFontScaling
                             >
                                 {alertData.level} • {alertData.structure}
@@ -171,45 +221,16 @@ export function EmergencyProtocolModal({
                     </View>
 
                     {/* BADGE */}
-                    <View
-                        style={{
-                            backgroundColor: severityColor,
-                            paddingVertical: 8,
-                            paddingHorizontal: 14,
-                            borderRadius: 8,
-                            alignSelf: "flex-start",
-                            marginBottom: 18,
-                        }}
-                    >
-                        <Text
-                            style={{
-                                color: "#FFFFFF",
-                                fontWeight: "900",
-                                fontSize: 13,
-                                letterSpacing: 1,
-                            }}
-                        >
-                            {alertData.isSimulation
-                                ? "SIMULADO"
-                                : alertData.isEfni
-                                    ? "EXERCÍCIO INTERNO - EFNI"
-                                    : "ALERTA OFICIAL"}
-                        </Text>
+
+                    <View style={[styles.badge, { backgroundColor: severityColor }]}>
+                        <Text style={styles.badgeText}>{badgeText}</Text>
                     </View>
 
                     {/* MENSAGEM */}
-                    <ScrollView
-                        style={{ maxHeight: 300 }}
-                        showsVerticalScrollIndicator
-                        accessible
-                    >
+
+                    <ScrollView style={styles.messageScroll} showsVerticalScrollIndicator>
                         <Text
-                            style={{
-                                fontSize: 17,
-                                lineHeight: 26,
-                                color: highContrastText,
-                                fontWeight: "500",
-                            }}
+                            style={[styles.messageText, { color: highContrastText }]}
                             allowFontScaling
                             maxFontSizeMultiplier={1.8}
                         >
@@ -218,14 +239,11 @@ export function EmergencyProtocolModal({
                     </ScrollView>
 
                     {/* BOTÕES */}
-                    <View style={{ marginTop: 26 }}>
+
+                    <View style={styles.buttons}>
                         <Button
-                            title={
-                                isSpeaking
-                                    ? "REPRODUZINDO..."
-                                    : "OUVIR MENSAGEM"
-                            }
-                            icon="volume-high"
+                            title={speakButtonTitle}
+                            icon={speakButtonIcon}
                             onPress={speakMessage}
                             variantStyle={{
                                 backgroundColor: theme.background,
@@ -238,11 +256,9 @@ export function EmergencyProtocolModal({
                                 fontWeight: "700",
                                 fontSize: 16,
                             }}
-                            accessibilityRole="button"
-                            accessibilityLabel="Ouvir mensagem de emergência"
                         />
 
-                        <View style={{ height: 14 }} />
+                        <View style={styles.spacer} />
 
                         <Button
                             title="CONFIRMAR E SAIR"
@@ -259,8 +275,6 @@ export function EmergencyProtocolModal({
                                 fontSize: 17,
                                 letterSpacing: 1,
                             }}
-                            accessibilityRole="button"
-                            accessibilityLabel="Confirmar ciência do alerta e retornar à tela inicial"
                         />
                     </View>
                 </View>

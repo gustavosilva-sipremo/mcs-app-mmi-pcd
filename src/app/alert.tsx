@@ -10,6 +10,7 @@ import { EmergencyProtocolModal } from "@/components/alert/EmergencyProtocolModa
 import { Button } from "@/components/ui/Button";
 import { useTheme } from "@/context/ThemeContext";
 import { useTorch } from "@/context/TorchProvider";
+import { hardwareService } from "@/services/HardwareService";
 import { styles } from "@/styles/alertStyles";
 
 export default function AlertScreen() {
@@ -84,20 +85,20 @@ ${alertData.message}
     Speech.stop();
 
     try {
-      player.pause();
+      hardwareService.stopAlertSound();
     } catch { }
 
     setFlashState(false);
     setTorch(false);
-  }, [player, setTorch]);
+  }, [setTorch]);
 
   /* ==============================
      INICIAR ALERTA
   ============================== */
 
   useEffect(() => {
-    player.loop = true;
-    player.play();
+    hardwareService.registerAlertPlayer(player);
+    hardwareService.playAlertSound(true);
 
     alertInterval.current = setInterval(() => {
       Haptics.notificationAsync(

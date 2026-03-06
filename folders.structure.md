@@ -5,6 +5,7 @@
     └── 📁.expo
     └── 📁.vscode
     └── 📁android
+    └── 📁ios
     └── 📁src
         └── 📁app
             ├── _layout.tsx
@@ -18,22 +19,44 @@
             └── 📁images
                 └── 📁demos
                 └── 📁icons
+                    ├── adaptive-icon.png
+                    ├── favicon.png
+                    ├── icon.png
+                    ├── splash-icon.png
                 └── 📁logos
+                    ├── logo_mmi.svg
+                    ├── sipremo.svg
             └── 📁sounds
+                ├── luva.mp3
                 ├── metal_gear.mp3
         └── 📁components
+            └── 📁alert
+                ├── EmergencyProtocolModal.tsx
+            └── 📁system
+                ├── AlertSoundPlayer.tsx
+                ├── TorchController.tsx
             └── 📁ui
                 ├── Badge.tsx
                 ├── Button.tsx
                 ├── Card.tsx
                 ├── ScreenContainer.tsx
+                ├── TorchButton.tsx
+        └── 📁context
+            ├── ThemeContext.tsx
+            ├── TorchProvider.tsx
+        └── 📁services
+            ├── HardwareService.ts
         └── 📁styles
+            ├── acionamentoStyles.ts
+            ├── alertStyles.ts
             ├── globalStyles.ts
             ├── indexStyles.ts
             ├── testsStyles.ts
+            ├── themes.ts
     ├── .gitignore
     ├── app.json
     ├── expo-env.d.ts
+    ├── folders.structure.md
     ├── metro.config.js
     ├── package-lock.json
     ├── package.json

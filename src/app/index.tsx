@@ -1,16 +1,14 @@
 import LogoMMI from "@/assets/images/logos/logo_mmi.svg";
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ScreenContainer } from "@/components/ui/ScreenContainer";
 import { TorchButton } from "@/components/ui/TorchButton";
 import Constants from "expo-constants";
 import { useRouter } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
-import { Alert, Text, View } from "react-native";
+import React, { useCallback } from "react";
+import { Text, View } from "react-native";
 
 import { useTheme } from "@/context/ThemeContext";
-import { hardwareService } from "@/services/HardwareService";
 import { indexStyles as styles } from "@/styles/indexStyles";
 
 export default function Index() {
@@ -18,44 +16,6 @@ export default function Index() {
   const appVersion = Constants.expoConfig?.version ?? "1.0.0";
 
   const { theme, toggleTheme, isHighContrast } = useTheme();
-
-  const [batteryPercentage, setBatteryPercentage] = useState<number | null>(null);
-
-  /* =========================
-     BATTERY
-  ========================= */
-
-  useEffect(() => {
-    hardwareService.initBattery();
-
-    const loadBattery = async () => {
-      const percent = hardwareService.getBatteryPercentage();
-      setBatteryPercentage(percent);
-    };
-
-    loadBattery();
-
-    const unsubscribe = hardwareService.subscribeBattery(level => {
-      const percent = Math.round(level * 100);
-
-      setBatteryPercentage(percent);
-
-      if (level <= 0.15) {
-        Alert.alert(
-          "Bateria Baixa",
-          "O uso do flash pode ser limitado pelo sistema."
-        );
-      }
-    });
-
-    return unsubscribe;
-  }, []);
-
-  const batteryVariant = batteryPercentage === null
-    ? "info"
-    : batteryPercentage > 20
-      ? "info"
-      : "warning";
 
   /* =========================
      NAVIGATION
@@ -85,17 +45,6 @@ export default function Index() {
             borderColor: theme.border,
           }}
         >
-          <View style={styles.headerRow}>
-            <Badge
-              title={
-                batteryPercentage !== null
-                  ? `Bateria: ${batteryPercentage}%`
-                  : "Lendo Bateria..."
-              }
-              variant={batteryVariant}
-            />
-          </View>
-
           <LogoMMI width={86} height={86} style={styles.logo} />
 
           <Text style={[styles.title, { color: theme.text }]}>

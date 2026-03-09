@@ -16,7 +16,7 @@ import { testsStyles as styles } from "@/styles/testsStyles";
 export default function TestsScreen() {
   const router = useRouter();
   const { theme, isHighContrast } = useTheme();
-  const { toggleAlertSound, speakMessage, isSpeaking, isPlaying } = useAudio();
+  const { toggleAlertSound, stopAlertSound, speakMessage, stopTTS, isSpeaking, isPlaying } = useAudio();
 
   /* =========================
      HAPTIC
@@ -36,17 +36,25 @@ export default function TestsScreen() {
      TTS
   ========================== */
   const testSpeech = useCallback(() => {
-    speakMessage(
-      "Teste de sintetizador de voz. Sistema de áudio da mineradora operando normalmente."
-    );
-  }, [speakMessage]);
+    if (isSpeaking) {
+      stopTTS();
+    } else {
+      speakMessage(
+        "Teste de sintetizador de voz. Sistema de áudio da mineradora operando normalmente."
+      );
+    }
+  }, [isSpeaking, speakMessage, stopTTS]);
 
   /* =========================
      ALERTA SONORO (toggle)
   ========================== */
   const handleToggleSound = useCallback(() => {
-    toggleAlertSound(true);
-  }, [toggleAlertSound]);
+    if (isPlaying) {
+      stopAlertSound(); // agora funciona
+    } else {
+      toggleAlertSound(true);
+    }
+  }, [isPlaying, toggleAlertSound, stopAlertSound]);
 
   /* =========================
      RENDER
@@ -62,10 +70,7 @@ export default function TestsScreen() {
           }}
         >
           <Text style={[styles.title, { color: theme.text }]}>
-            Painel de{" "}
-            <Text style={{ color: theme.primary }}>
-              Hardware
-            </Text>
+            Painel de <Text style={{ color: theme.primary }}>Hardware</Text>
           </Text>
 
           <Text style={[styles.description, { color: theme.text }]}>

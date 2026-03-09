@@ -1,30 +1,25 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useAudioPlayer } from "expo-audio";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import * as Speech from "expo-speech";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Animated, Text, View } from "react-native";
 
 import { EmergencyProtocolModal } from "@/components/alert/EmergencyProtocolModal";
 import { Button } from "@/components/ui/Button";
+import { useAudio } from "@/context/AudioProvider";
 import { useTheme } from "@/context/ThemeContext";
 import { useTorch } from "@/context/TorchProvider";
-import { hardwareService } from "@/services/HardwareService";
 import { styles } from "@/styles/alertStyles";
 
 export default function AlertScreen() {
   const router = useRouter();
   const { theme } = useTheme();
   const { set: setTorch } = useTorch();
+  const { toggleAlertSound, speakMessage, stopTTS } = useAudio(); // ✅ pega stopTTS real
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [flashState, setFlashState] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-
-  const player = useAudioPlayer(
-    require("@/assets/sounds/metal_gear.mp3")
-  );
 
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const overlayAnim = useRef(new Animated.Value(0)).current;
@@ -34,21 +29,12 @@ export default function AlertScreen() {
   const overlayLoop = useRef<Animated.CompositeAnimation | null>(null);
 
   /* ==============================
-     CONTROLE DE VOZ
+     FALAR ALERTA
   ============================== */
-
   const speakAlert = useCallback(
-    (alertData: {
-      level: string;
-      structure: string;
-      title: string;
-      message: string;
-    }) => {
+    (alertData: { level: string; structure: string; title: string; message: string }) => {
       if (isSpeaking) return;
-
       setIsSpeaking(true);
-
-      Speech.stop();
 
       const fullMessage = `
 ${alertData.level}.
@@ -57,22 +43,15 @@ ${alertData.title}.
 ${alertData.message}
 `;
 
-      Speech.speak(fullMessage, {
-        language: "pt-BR",
-        rate: 0.85,
-        pitch: 1,
-        onDone: () => setIsSpeaking(false),
-        onStopped: () => setIsSpeaking(false),
-        onError: () => setIsSpeaking(false),
-      });
+      speakMessage(fullMessage);
+      setIsSpeaking(false);
     },
-    [isSpeaking]
+    [isSpeaking, speakMessage]
   );
 
   /* ==============================
-     PARAR TUDO
+     PARAR ALERTA COMPLETO
   ============================== */
-
   const stopHardwareActions = useCallback(() => {
     if (alertInterval.current) {
       clearInterval(alertInterval.current);
@@ -82,28 +61,20 @@ ${alertData.message}
     pulseLoop.current?.stop();
     overlayLoop.current?.stop();
 
-    Speech.stop();
-
-    try {
-      hardwareService.stopAlertSound();
-    } catch { }
-
     setFlashState(false);
     setTorch(false);
-  }, [setTorch]);
+
+    toggleAlertSound(false); // interrompe o som do alerta
+  }, [setTorch, toggleAlertSound]);
 
   /* ==============================
-     INICIAR ALERTA
+     INICIAR ALERTA AUTOMATICAMENTE
   ============================== */
-
   useEffect(() => {
-    hardwareService.registerAlertPlayer(player);
-    hardwareService.playAlertSound(true);
+    toggleAlertSound(true); // inicia o som de alerta
 
     alertInterval.current = setInterval(() => {
-      Haptics.notificationAsync(
-        Haptics.NotificationFeedbackType.Error
-      );
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
 
       setFlashState(prev => {
         const next = !prev;
@@ -114,40 +85,29 @@ ${alertData.message}
 
     pulseLoop.current = Animated.loop(
       Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.15,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
+        Animated.timing(pulseAnim, { toValue: 1.15, duration: 300, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
       ])
     );
-
     pulseLoop.current.start();
 
     overlayLoop.current = Animated.loop(
-      Animated.timing(overlayAnim, {
-        toValue: 1,
-        duration: 2500,
-        useNativeDriver: true,
-      })
+      Animated.timing(overlayAnim, { toValue: 1, duration: 2500, useNativeDriver: true })
     );
-
     overlayLoop.current.start();
 
-    return stopHardwareActions;
-  }, [player, pulseAnim, overlayAnim, setTorch, stopHardwareActions]);
+    return () => {
+      stopHardwareActions();
+    };
+  }, [pulseAnim, overlayAnim, setTorch, stopHardwareActions, toggleAlertSound]);
 
   /* ==============================
      ABRIR PROTOCOLO
   ============================== */
-
   const handleOpenProtocol = () => {
-    stopHardwareActions();
+    stopHardwareActions(); // para flash e som do alerta
+    stopTTS();             // ✅ para qualquer TTS ativo
+
     setIsModalVisible(true);
 
     const alertPayload = {
@@ -160,12 +120,11 @@ Dar início às Ações de Emergência em Nível 3.
 Providenciar os recursos necessários para atendimento.`,
     };
 
+    // TTS opcional para o modal
     speakAlert(alertPayload);
   };
 
-  const backgroundColor = flashState
-    ? theme.danger
-    : theme.background;
+  const backgroundColor = flashState ? theme.danger : theme.background;
 
   return (
     <View style={[styles.container, { backgroundColor }]}>
@@ -175,54 +134,20 @@ Providenciar os recursos necessários para atendimento.`,
           {
             backgroundColor: theme.text + "20",
             transform: [
-              {
-                translateY: overlayAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [-200, 1000],
-                }),
-              },
+              { translateY: overlayAnim.interpolate({ inputRange: [0, 1], outputRange: [-200, 1000] }) },
             ],
           },
         ]}
       />
 
-      <Animated.View
-        style={[
-          styles.alertContent,
-          { transform: [{ scale: pulseAnim }] },
-        ]}
-      >
-        <Ionicons
-          name="warning"
-          size={120}
-          color={theme.text}
-        />
+      <Animated.View style={[styles.alertContent, { transform: [{ scale: pulseAnim }] }]}>
+        <Ionicons name="warning" size={120} color={theme.text} />
 
-        <Text style={[styles.alertSubtitle, { color: theme.text }]}>
-          PROTOCOLO CRÍTICO
-        </Text>
+        <Text style={[styles.alertSubtitle, { color: theme.text }]}>PROTOCOLO CRÍTICO</Text>
+        <Text style={[styles.alertTitle, { color: theme.text }]}>EVACUAÇÃO</Text>
 
-        <Text style={[styles.alertTitle, { color: theme.text }]}>
-          EVACUAÇÃO
-        </Text>
-
-        <View
-          style={[
-            styles.dangerBadge,
-            {
-              backgroundColor: theme.card,
-              borderColor: theme.border,
-            },
-          ]}
-        >
-          <Text
-            style={[
-              styles.dangerText,
-              { color: theme.primary },
-            ]}
-          >
-            ALERTA ATIVO
-          </Text>
+        <View style={[styles.dangerBadge, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <Text style={[styles.dangerText, { color: theme.primary }]}>ALERTA ATIVO</Text>
         </View>
       </Animated.View>
 
@@ -231,14 +156,8 @@ Providenciar os recursos necessários para atendimento.`,
           title="ABRIR PROTOCOLO"
           icon="shield-checkmark"
           onPress={handleOpenProtocol}
-          variantStyle={[
-            styles.primaryButton,
-            { backgroundColor: theme.primary },
-          ]}
-          textStyle={[
-            styles.primaryButtonText,
-            { color: theme.background },
-          ]}
+          variantStyle={[styles.primaryButton, { backgroundColor: theme.primary }]}
+          textStyle={[styles.primaryButtonText, { color: theme.background }]}
         />
       </View>
 

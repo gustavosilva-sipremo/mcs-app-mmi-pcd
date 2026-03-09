@@ -45,7 +45,6 @@
             ├── ThemeContext.tsx
             ├── TorchProvider.tsx
         └── 📁services
-            ├── AudioService.ts
             ├── HardwareService.ts
         └── 📁styles
             ├── acionamentoStyles.ts

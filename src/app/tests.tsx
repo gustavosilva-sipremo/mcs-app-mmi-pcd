@@ -1,17 +1,13 @@
 import { useRouter } from "expo-router";
-import React, { useCallback, useRef } from "react";
+import React, { useCallback } from "react";
 import { Text, View } from "react-native";
-
-import {
-  AlertSoundHandle,
-  AlertSoundPlayer,
-} from "@/components/system/AlertSoundPlayer";
 
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ScreenContainer } from "@/components/ui/ScreenContainer";
 import { TorchButton } from "@/components/ui/TorchButton";
 
+import { useAudio } from "@/context/AudioProvider";
 import { useTheme } from "@/context/ThemeContext";
 import { hardwareService } from "@/services/HardwareService";
 
@@ -20,13 +16,11 @@ import { testsStyles as styles } from "@/styles/testsStyles";
 export default function TestsScreen() {
   const router = useRouter();
   const { theme, isHighContrast } = useTheme();
-
-  const alertSoundRef = useRef<AlertSoundHandle>(null);
+  const { toggleAlertSound, speakMessage, isSpeaking, isPlaying } = useAudio();
 
   /* =========================
      HAPTIC
   ========================== */
-
   const handleVibration = useCallback(
     async (type: "success" | "error") => {
       if (type === "success") {
@@ -41,29 +35,22 @@ export default function TestsScreen() {
   /* =========================
      TTS
   ========================== */
-
   const testSpeech = useCallback(() => {
-    hardwareService.speak(
-      "Teste de sintetizador de voz. Sistema de áudio da mineradora operando normalmente.",
-      {
-        rate: 0.9,
-        pitch: 1.0,
-      }
+    speakMessage(
+      "Teste de sintetizador de voz. Sistema de áudio da mineradora operando normalmente."
     );
-  }, []);
+  }, [speakMessage]);
 
   /* =========================
-     AUDIO
+     ALERTA SONORO (toggle)
   ========================== */
-
-  const playTestSound = useCallback(() => {
-    alertSoundRef.current?.play();
-  }, []);
+  const handleToggleSound = useCallback(() => {
+    toggleAlertSound(true);
+  }, [toggleAlertSound]);
 
   /* =========================
      RENDER
   ========================== */
-
   return (
     <ScreenContainer withScroll>
       <View style={styles.container}>
@@ -97,7 +84,7 @@ export default function TestsScreen() {
 
             {/* TTS */}
             <Button
-              title="Testar Voz (TTS)"
+              title={isSpeaking ? "Falando..." : "Testar Voz (TTS)"}
               icon="chatbubble-ellipses-outline"
               variantStyle={{
                 backgroundColor: theme.card,
@@ -113,15 +100,15 @@ export default function TestsScreen() {
 
             {/* ALERTA SONORO */}
             <Button
-              title="Ouvir Alarme"
-              icon="volume-high-outline"
+              title={isPlaying ? "Parar Alerta" : "Ouvir Alarme"}
+              icon={isPlaying ? "stop-circle-outline" : "volume-high-outline"}
               variantStyle={{
                 backgroundColor: theme.card,
                 borderWidth: 1,
                 borderColor: theme.border,
               }}
               textStyle={{ color: theme.text }}
-              onPress={playTestSound}
+              onPress={handleToggleSound}
             />
 
             {/* FLASH */}
@@ -152,9 +139,6 @@ export default function TestsScreen() {
             />
           </View>
         </Card>
-
-        {/* PLAYER DE ALERTA */}
-        <AlertSoundPlayer ref={alertSoundRef} />
       </View>
     </ScreenContainer>
   );

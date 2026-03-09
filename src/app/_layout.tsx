@@ -1,4 +1,5 @@
 import { TorchController } from "@/components/system/TorchController";
+import { AudioProvider } from "@/context/AudioProvider";
 import { ThemeProvider, useTheme } from "@/context/ThemeContext";
 import { TorchProvider } from "@/context/TorchProvider";
 import { Stack } from "expo-router";
@@ -12,66 +13,62 @@ SplashScreen.preventAutoHideAsync();
 
 /**
  * Layout interno que consome o tema.
- * TorchProvider fica aqui para envolver TODAS as telas.
+ * TorchProvider e AudioProvider ficam aqui para envolver TODAS as telas.
  */
 function AppLayout() {
   const { theme, isHighContrast } = useTheme();
 
   return (
     <TorchProvider>
-      <View style={{ flex: 1, backgroundColor: theme.background }}>
-        {/* StatusBar dinâmica baseada no tema */}
-        <StatusBar
-          style={isHighContrast ? "light" : "dark"}
-          backgroundColor={theme.background}
-          translucent={false}
-        />
-
-        {/* Stack principal */}
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: {
-              backgroundColor: theme.background,
-            },
-            animation: "slide_from_right",
-            gestureEnabled: true,
-          }}
-        >
-          <Stack.Screen
-            name="index"
-            options={{ title: "Início" }}
+      <AudioProvider>
+        <View style={{ flex: 1, backgroundColor: theme.background }}>
+          {/* StatusBar dinâmica baseada no tema */}
+          <StatusBar
+            style={isHighContrast ? "light" : "dark"}
+            backgroundColor={theme.background}
+            translucent={false}
           />
 
-          <Stack.Screen
-            name="acionamento"
-            options={{
-              title: "Confirmar Alerta",
-              presentation: "modal",
+          {/* Stack principal */}
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              contentStyle: {
+                backgroundColor: theme.background,
+              },
+              animation: "slide_from_right",
+              gestureEnabled: true,
             }}
-          />
+          >
+            <Stack.Screen name="index" options={{ title: "Início" }} />
+            <Stack.Screen
+              name="acionamento"
+              options={{
+                title: "Confirmar Alerta",
+                presentation: "modal",
+              }}
+            />
+            <Stack.Screen
+              name="alert"
+              options={{
+                title: "EMERGÊNCIA",
+                gestureEnabled: false,
+                animation: "fade",
+              }}
+            />
+            <Stack.Screen
+              name="tests"
+              options={{
+                title: "Laboratório de Hardware",
+                presentation: "card",
+              }}
+            />
+          </Stack>
 
-          <Stack.Screen
-            name="alert"
-            options={{
-              title: "EMERGÊNCIA",
-              gestureEnabled: false,
-              animation: "fade",
-            }}
-          />
-
-          <Stack.Screen
-            name="tests"
-            options={{
-              title: "Laboratório de Hardware",
-              presentation: "card",
-            }}
-          />
-        </Stack>
-
-        {/* Controller global da lanterna (fora do Stack) */}
-        <TorchController />
-      </View>
+          {/* Controller global da lanterna (fora do Stack) */}
+          <TorchController />
+        </View>
+      </AudioProvider>
     </TorchProvider>
   );
 }

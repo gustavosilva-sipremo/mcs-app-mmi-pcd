@@ -86,22 +86,13 @@ export default function TestsScreen() {
           </Text>
 
           <View style={styles.grid}>
-            {/* VIBRAÇÃO SUCESSO */}
+            {/* VIBRAÇÃO */}
             <Button
-              title="Vibração Sucesso"
+              title="Vibração"
               icon="checkmark-circle-outline"
               variantStyle={[styles.btnSuccess]}
               textStyle={{ color: isHighContrast ? "#000" : "#FFF" }}
               onPress={() => handleVibration("success")}
-            />
-
-            {/* VIBRAÇÃO ERRO */}
-            <Button
-              title="Vibração Erro"
-              icon="close-circle-outline"
-              variantStyle={[styles.btnError]}
-              textStyle={{ color: "#FFF" }}
-              onPress={() => handleVibration("error")}
             />
 
             {/* TTS */}

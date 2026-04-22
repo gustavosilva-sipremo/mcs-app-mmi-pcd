@@ -45,6 +45,7 @@ export const AudioProvider = ({ children, alertSoundFile }: Props) => {
   /* =========================
        PLAYER DE ÁUDIO
     ========================= */
+  /** Starts (or restarts) the alert sound. `loop` only controls repeat — use `stopAlertSound` to silence. */
   const toggleAlertSound = useCallback(
     async (loop = true) => {
       try {

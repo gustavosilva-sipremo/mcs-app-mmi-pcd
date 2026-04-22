@@ -20,7 +20,7 @@ export default function AlertScreen() {
   const router = useRouter();
   const { theme } = useTheme();
   const { set: setTorch } = useTorch();
-  const { toggleAlertSound, speakMessage, stopTTS } = useAudio(); // ✅ pega stopTTS real
+  const { toggleAlertSound, stopAlertSound, speakMessage, stopTTS } = useAudio();
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [flashState, setFlashState] = useState(false);
@@ -62,8 +62,8 @@ export default function AlertScreen() {
     setFlashState(false);
     setTorch(false);
 
-    toggleAlertSound(false); // interrompe o som do alerta
-  }, [setTorch, toggleAlertSound]);
+    void stopAlertSound();
+  }, [setTorch, stopAlertSound]);
 
   /* ==============================
      INICIAR ALERTA AUTOMATICAMENTE

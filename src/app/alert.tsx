@@ -7,6 +7,11 @@ import { Animated, Text, View } from "react-native";
 import { EmergencyProtocolModal } from "@/components/alert/EmergencyProtocolModal";
 import { Button } from "@/components/ui/Button";
 import { useAudio } from "@/context/AudioProvider";
+import {
+  buildEmergencySpeechText,
+  defaultEmergencyAlert,
+  emergencyCopy,
+} from "@/features/alerts/content";
 import { useTheme } from "@/context/ThemeContext";
 import { useTorch } from "@/context/TorchProvider";
 import { styles } from "@/styles/alertStyles";
@@ -32,18 +37,11 @@ export default function AlertScreen() {
      FALAR ALERTA
   ============================== */
   const speakAlert = useCallback(
-    (alertData: { level: string; structure: string; title: string; message: string }) => {
+    (alertData: typeof defaultEmergencyAlert) => {
       if (isSpeaking) return;
       setIsSpeaking(true);
 
-      const fullMessage = `
-${alertData.level}.
-Estrutura ${alertData.structure}.
-${alertData.title}.
-${alertData.message}
-`;
-
-      speakMessage(fullMessage);
+      speakMessage(buildEmergencySpeechText(alertData));
       setIsSpeaking(false);
     },
     [isSpeaking, speakMessage]
@@ -110,18 +108,8 @@ ${alertData.message}
 
     setIsModalVisible(true);
 
-    const alertPayload = {
-      level: "Nível 3",
-      structure: "B1 Ipê",
-      title: "Ruptura da Barragem",
-      message: `Alerta de Emergência Nível 3.
-Ruptura da barragem B1 Ipê Mina. Iminente ou ocorrendo.
-Dar início às Ações de Emergência em Nível 3.
-Providenciar os recursos necessários para atendimento.`,
-    };
-
     // TTS opcional para o modal
-    speakAlert(alertPayload);
+    speakAlert(defaultEmergencyAlert);
   };
 
   const backgroundColor = flashState ? theme.danger : theme.background;
@@ -143,17 +131,29 @@ Providenciar os recursos necessários para atendimento.`,
       <Animated.View style={[styles.alertContent, { transform: [{ scale: pulseAnim }] }]}>
         <Ionicons name="warning" size={120} color={theme.text} />
 
-        <Text style={[styles.alertSubtitle, { color: theme.text }]}>PROTOCOLO CRÍTICO</Text>
-        <Text style={[styles.alertTitle, { color: theme.text }]}>EVACUAÇÃO</Text>
+        <Text
+          accessibilityRole="header"
+          style={[styles.alertSubtitle, { color: theme.text }]}
+        >
+          {emergencyCopy.ptBR.alertScreen.subtitle}
+        </Text>
+        <Text
+          accessibilityRole="header"
+          style={[styles.alertTitle, { color: theme.text }]}
+        >
+          {emergencyCopy.ptBR.alertScreen.title}
+        </Text>
 
         <View style={[styles.dangerBadge, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <Text style={[styles.dangerText, { color: theme.primary }]}>ALERTA ATIVO</Text>
+          <Text style={[styles.dangerText, { color: theme.primary }]}>
+            {emergencyCopy.ptBR.alertScreen.badge}
+          </Text>
         </View>
       </Animated.View>
 
       <View style={styles.bottomContainer}>
         <Button
-          title="ABRIR PROTOCOLO"
+          title={emergencyCopy.ptBR.alertScreen.openProtocolButton}
           icon="shield-checkmark"
           onPress={handleOpenProtocol}
           variantStyle={[styles.primaryButton, { backgroundColor: theme.primary }]}
@@ -163,15 +163,7 @@ Providenciar os recursos necessários para atendimento.`,
 
       <EmergencyProtocolModal
         visible={isModalVisible}
-        alertData={{
-          level: "Nível 3",
-          structure: "B1 Ipê",
-          title: "Ruptura da Barragem",
-          message: `Alerta de Emergência Nível 3.
-Ruptura da barragem B1 Ipê Mina. Iminente ou ocorrendo.
-Dar início às Ações de Emergência em Nível 3.
-Providenciar os recursos necessários para atendimento.`,
-        }}
+        alertData={defaultEmergencyAlert}
         onClose={() => {
           setIsModalVisible(false);
           router.replace("/");

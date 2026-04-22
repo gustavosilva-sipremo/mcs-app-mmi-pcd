@@ -2,7 +2,6 @@ import LogoMMI from "@/assets/images/logos/logo_mmi.svg";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ScreenContainer } from "@/components/ui/ScreenContainer";
-import { TorchButton } from "@/components/ui/TorchButton";
 import Constants from "expo-constants";
 import { useRouter } from "expo-router";
 import React, { useCallback } from "react";
@@ -47,17 +46,18 @@ export default function Index() {
         >
           <LogoMMI width={86} height={86} style={styles.logo} />
 
-          <Text style={[styles.title, { color: theme.text }]}>
-            MMI{" "}
-            <Text style={{ color: theme.primary }}>
-              Mineradora
-            </Text>
+          <Text
+            accessibilityRole="header"
+            style={[styles.title, { color: theme.text }]}
+          >
+            MMI <Text style={{ color: theme.primary }}>Mineradora</Text>
           </Text>
 
           <Text style={[styles.description, { color: theme.text }]}>
             Receba alertas importantes e
             <Text style={{ fontWeight: "800", color: theme.primary }}>
-              {" "}conte com suporte acessível quando precisar.
+              {" "}
+              conte com suporte acessível quando precisar.
             </Text>
           </Text>
 
@@ -85,14 +85,8 @@ export default function Index() {
               onPress={goToTests}
             />
 
-            <TorchButton />
-
             <Button
-              title={
-                isHighContrast
-                  ? "Modo Normal"
-                  : "Modo Alto Contraste"
-              }
+              title={isHighContrast ? "Modo Normal" : "Modo Alto Contraste"}
               icon="contrast-outline"
               variantStyle={{
                 backgroundColor: theme.card,

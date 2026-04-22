@@ -22,7 +22,7 @@ export function TorchButton({
                 borderColor: theme.border,
             }}
             textStyle={{
-                color: isOn ? "#000" : theme.text,
+                color: isOn ? theme.background : theme.text,
             }}
             onPress={toggle}
         />

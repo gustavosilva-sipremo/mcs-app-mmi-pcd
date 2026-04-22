@@ -15,7 +15,7 @@ import { testsStyles as styles } from "@/styles/testsStyles";
 
 export default function TestsScreen() {
   const router = useRouter();
-  const { theme, isHighContrast } = useTheme();
+  const { theme } = useTheme();
   const { toggleAlertSound, stopAlertSound, speakMessage, stopTTS, isSpeaking, isPlaying } = useAudio();
 
   /* =========================
@@ -69,7 +69,7 @@ export default function TestsScreen() {
             borderColor: theme.border,
           }}
         >
-          <Text style={[styles.title, { color: theme.text }]}>
+          <Text accessibilityRole="header" style={[styles.title, { color: theme.text }]}>
             Painel de <Text style={{ color: theme.primary }}>Hardware</Text>
           </Text>
 
@@ -82,8 +82,8 @@ export default function TestsScreen() {
             <Button
               title="Vibração"
               icon="checkmark-circle-outline"
-              variantStyle={[styles.btnSuccess]}
-              textStyle={{ color: isHighContrast ? "#000" : "#FFF" }}
+              variantStyle={[styles.btnSuccess, { backgroundColor: theme.primary }]}
+              textStyle={{ color: theme.background }}
               onPress={() => handleVibration("success")}
             />
 

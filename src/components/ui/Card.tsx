@@ -1,6 +1,7 @@
 import { globalStyles as g } from "@/styles/globalStyles";
 import React, { memo, useEffect, useRef } from "react";
 import {
+  AccessibilityRole,
   Animated,
   Easing,
   StyleSheet,
@@ -14,6 +15,7 @@ interface CardProps {
   delay?: number;
   style?: ViewStyle;
   accessible?: boolean;
+  accessibilityRole?: AccessibilityRole;
 }
 
 export const Card = memo(
@@ -22,7 +24,8 @@ export const Card = memo(
     animate = false,
     delay = 0,
     style,
-    accessible = true,
+    accessible = false,
+    accessibilityRole,
   }: CardProps) => {
     const opacity = useRef(new Animated.Value(animate ? 0 : 1)).current;
     const translateY = useRef(new Animated.Value(animate ? 24 : 0)).current;
@@ -71,7 +74,7 @@ export const Card = memo(
 
         <Animated.View
           accessible={accessible}
-          accessibilityRole="summary"
+          accessibilityRole={accessible ? accessibilityRole : undefined}
           style={[
             g.card,
             styles.baseCard,

@@ -3,6 +3,7 @@ import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import {
+  AccessibilityActionEvent,
   Animated,
   Dimensions,
   Easing,
@@ -14,6 +15,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ScreenContainer } from "@/components/ui/ScreenContainer";
+import { emergencyCopy } from "@/features/alerts/content";
 import { useTheme } from "@/context/ThemeContext";
 
 import {
@@ -40,6 +42,7 @@ const SUCCESS_THRESHOLD = DISTANCE * 0.85;
 export default function AcionamentoScreen() {
   const router = useRouter();
   const { theme } = useTheme();
+  const copy = emergencyCopy.ptBR.acionamento;
 
   const translateX = useRef(new Animated.Value(0)).current;
   const [locked, setLocked] = useState(false);
@@ -74,6 +77,16 @@ export default function AcionamentoScreen() {
       setTimeout(resetSlider, 500);
     });
   }, [locked, router, translateX, resetSlider]);
+
+  const handleAccessibilityAction = useCallback(
+    (event: AccessibilityActionEvent) => {
+      const actionName = event.nativeEvent.actionName;
+      if (actionName === "activate" || actionName === "increment") {
+        handleSuccess();
+      }
+    },
+    [handleSuccess]
+  );
 
   /* =========================
      FALHA
@@ -159,14 +172,15 @@ export default function AcionamentoScreen() {
           }}
         >
           <Text
+            accessibilityRole="header"
             style={[
               styles.title,
               { color: theme.text },
             ]}
           >
-            Confirmação de{" "}
+            {copy.titlePrefix}{" "}
             <Text style={{ color: theme.danger }}>
-              Alerta
+              {copy.titleHighlight}
             </Text>
           </Text>
 
@@ -176,7 +190,7 @@ export default function AcionamentoScreen() {
               { color: theme.text },
             ]}
           >
-            Deslize o botão para ativar o protocolo de evacuação imediata.
+            {copy.description}
           </Text>
 
           <View
@@ -189,8 +203,19 @@ export default function AcionamentoScreen() {
             ]}
             accessible
             accessibilityRole="adjustable"
-            accessibilityLabel="Deslizar para disparar alerta"
-            accessibilityHint="Deslize totalmente para a direita para confirmar"
+            accessibilityLabel={copy.sliderLabel}
+            accessibilityHint={copy.sliderHint}
+            accessibilityActions={[
+              {
+                name: "activate",
+                label: copy.accessibilityConfirmLabel,
+              },
+              {
+                name: "increment",
+                label: copy.accessibilityConfirmLabel,
+              },
+            ]}
+            onAccessibilityAction={handleAccessibilityAction}
           >
             <Animated.View
               style={[
@@ -211,7 +236,7 @@ export default function AcionamentoScreen() {
                 },
               ]}
             >
-              DESLIZE PARA DISPARAR
+              {copy.sliderText}
             </Animated.Text>
 
             <Animated.View
@@ -233,7 +258,7 @@ export default function AcionamentoScreen() {
           </View>
 
           <Button
-            title="Cancelar & Voltar"
+            title={copy.cancelButton}
             variantStyle={[
               styles.cancelButton,
               {

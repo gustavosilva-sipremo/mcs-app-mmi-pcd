@@ -2,21 +2,22 @@ import { hardwareService } from "@/services/HardwareService";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
-import { AccessibilityInfo, Modal, ScrollView, Text, View } from "react-native";
+import {
+  AccessibilityInfo,
+  Modal,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 
 import { Button } from "@/components/ui/Button";
 import { useAudio } from "@/context/AudioProvider";
+import {
+  emergencyCopy,
+  type EmergencyAlertData,
+} from "@/features/alerts/content";
 import { useTheme } from "@/context/ThemeContext";
 import { createStyles } from "@/styles/components/EmergencyProtocolModalStyles";
-
-export type EmergencyAlertData = {
-    level: string;
-    structure: string;
-    title: string;
-    message: string;
-    isSimulation?: boolean;
-    isEfni?: boolean;
-};
 
 type Props = {
     visible: boolean;
@@ -25,7 +26,12 @@ type Props = {
     onAcknowledge?: () => void;
 };
 
-export function EmergencyProtocolModal({ visible, alertData, onClose }: Props) {
+export function EmergencyProtocolModal({
+    visible,
+    alertData,
+    onClose,
+    onAcknowledge,
+}: Props) {
     const { theme } = useTheme();
     const router = useRouter();
     const { speakMessage, pauseTTS, resumeTTS, stopTTS, isSpeaking } = useAudio(); // ✅ agora com pause/resume
@@ -63,6 +69,10 @@ export function EmergencyProtocolModal({ visible, alertData, onClose }: Props) {
     const handleAcknowledge = async () => {
         stopTTS();
         await hardwareService.vibrateSuccess();
+        if (onAcknowledge) {
+            onAcknowledge();
+            return;
+        }
         onClose?.();
         router.replace("/");
     };
@@ -85,21 +95,21 @@ export function EmergencyProtocolModal({ visible, alertData, onClose }: Props) {
 
     const speakButtonTitle = isSpeaking
         ? isPaused
-            ? "CONTINUAR ÁUDIO"
-            : "PAUSAR ÁUDIO"
-        : "OUVIR MENSAGEM";
+            ? emergencyCopy.ptBR.modal.resume
+            : emergencyCopy.ptBR.modal.pause
+        : emergencyCopy.ptBR.modal.speak;
 
     const speakButtonIcon = isSpeaking
         ? isPaused
-            ? "play"
+        ? "play"
             : "pause"
         : "volume-high";
 
     const badgeText = alertData.isSimulation
-        ? "SIMULADO"
+        ? emergencyCopy.ptBR.modal.simulatedBadge
         : alertData.isEfni
-            ? "EXERCÍCIO INTERNO - EFNI"
-            : "ALERTA OFICIAL";
+            ? emergencyCopy.ptBR.modal.efniBadge
+            : emergencyCopy.ptBR.modal.officialBadge;
 
     const severityColor = alertData.level.includes("3") ? theme.danger : alertData.isEfni ? theme.primary : theme.border;
 
@@ -154,7 +164,7 @@ export function EmergencyProtocolModal({ visible, alertData, onClose }: Props) {
                         <View style={styles.spacer} />
 
                         <Button
-                            title="CONFIRMAR E SAIR"
+                            title={emergencyCopy.ptBR.modal.acknowledge}
                             icon="checkmark-circle"
                             onPress={handleAcknowledge}
                             variantStyle={{

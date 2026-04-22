@@ -1,4 +1,6 @@
+import { NotificationBootstrap } from "@/components/system/NotificationBootstrap";
 import { TorchController } from "@/components/system/TorchController";
+import { AlertPayloadProvider } from "@/context/AlertPayloadContext";
 import { AudioProvider } from "@/context/AudioProvider";
 import { ThemeProvider, useTheme } from "@/context/ThemeContext";
 import { TorchProvider } from "@/context/TorchProvider";
@@ -42,13 +44,6 @@ function AppLayout() {
           >
             <Stack.Screen name="index" options={{ title: "Início" }} />
             <Stack.Screen
-              name="acionamento"
-              options={{
-                title: "Confirmar Alerta",
-                presentation: "modal",
-              }}
-            />
-            <Stack.Screen
               name="alert"
               options={{
                 title: "EMERGÊNCIA",
@@ -67,6 +62,7 @@ function AppLayout() {
 
           {/* Controller global da lanterna (fora do Stack) */}
           <TorchController />
+          <NotificationBootstrap />
         </View>
       </AudioProvider>
     </TorchProvider>
@@ -89,7 +85,9 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider>
-        <AppLayout />
+        <AlertPayloadProvider>
+          <AppLayout />
+        </AlertPayloadProvider>
       </ThemeProvider>
     </GestureHandlerRootView>
   );

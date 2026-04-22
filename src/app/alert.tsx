@@ -6,6 +6,7 @@ import { Animated, Text, View } from "react-native";
 
 import { EmergencyProtocolModal } from "@/components/alert/EmergencyProtocolModal";
 import { Button } from "@/components/ui/Button";
+import { useAlertPayload } from "@/context/AlertPayloadContext";
 import { useAudio } from "@/context/AudioProvider";
 import {
   buildEmergencySpeechText,
@@ -19,8 +20,11 @@ import { styles } from "@/styles/alertStyles";
 export default function AlertScreen() {
   const router = useRouter();
   const { theme } = useTheme();
+  const { pendingAlert, clearPendingAlert } = useAlertPayload();
   const { set: setTorch } = useTorch();
   const { toggleAlertSound, stopAlertSound, speakMessage, stopTTS } = useAudio();
+
+  const alertData = pendingAlert ?? defaultEmergencyAlert;
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [flashState, setFlashState] = useState(false);
@@ -37,15 +41,21 @@ export default function AlertScreen() {
      FALAR ALERTA
   ============================== */
   const speakAlert = useCallback(
-    (alertData: typeof defaultEmergencyAlert) => {
+    (data: typeof defaultEmergencyAlert) => {
       if (isSpeaking) return;
       setIsSpeaking(true);
 
-      speakMessage(buildEmergencySpeechText(alertData));
+      speakMessage(buildEmergencySpeechText(data));
       setIsSpeaking(false);
     },
     [isSpeaking, speakMessage]
   );
+
+  useEffect(() => {
+    return () => {
+      clearPendingAlert();
+    };
+  }, [clearPendingAlert]);
 
   /* ==============================
      PARAR ALERTA COMPLETO
@@ -108,8 +118,7 @@ export default function AlertScreen() {
 
     setIsModalVisible(true);
 
-    // TTS opcional para o modal
-    speakAlert(defaultEmergencyAlert);
+    speakAlert(alertData);
   };
 
   const backgroundColor = flashState ? theme.danger : theme.background;
@@ -145,8 +154,12 @@ export default function AlertScreen() {
         </Text>
 
         <View style={[styles.dangerBadge, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <Text style={[styles.dangerText, { color: theme.primary }]}>
-            {emergencyCopy.ptBR.alertScreen.badge}
+          <Text
+            style={[styles.dangerText, { color: theme.primary }]}
+            numberOfLines={2}
+            accessibilityRole="text"
+          >
+            {alertData.title}
           </Text>
         </View>
       </Animated.View>
@@ -163,13 +176,15 @@ export default function AlertScreen() {
 
       <EmergencyProtocolModal
         visible={isModalVisible}
-        alertData={defaultEmergencyAlert}
+        alertData={alertData}
         onClose={() => {
           setIsModalVisible(false);
+          clearPendingAlert();
           router.replace("/");
         }}
         onAcknowledge={() => {
           setIsModalVisible(false);
+          clearPendingAlert();
           router.replace("/");
         }}
       />

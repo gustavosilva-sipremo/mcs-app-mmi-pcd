@@ -20,8 +20,8 @@ export default function Index() {
      NAVIGATION
   ========================= */
 
-  const goToAcionamento = useCallback(() => {
-    router.push("/acionamento");
+  const goToAlertSimulation = useCallback(() => {
+    router.push("/alert");
   }, [router]);
 
   const goToTests = useCallback(() => {
@@ -63,14 +63,14 @@ export default function Index() {
 
           <View style={styles.buttonGap}>
             <Button
-              title="Simular Acionamento"
+              title="Simular alerta"
               icon="megaphone-outline"
               variantStyle={{
                 backgroundColor: theme.danger,
                 height: 70,
               }}
               textStyle={{ color: "#FFF" }}
-              onPress={goToAcionamento}
+              onPress={goToAlertSimulation}
             />
 
             <Button

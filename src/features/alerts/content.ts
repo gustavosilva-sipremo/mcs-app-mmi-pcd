@@ -9,19 +9,6 @@ export type EmergencyAlertData = {
 
 export const emergencyCopy = {
   ptBR: {
-    acionamento: {
-      titlePrefix: "Confirmação de",
-      titleHighlight: "Alerta",
-      description:
-        "Deslize o botão para ativar o protocolo de evacuação imediata.",
-      sliderLabel: "Deslizar para disparar alerta",
-      sliderHint:
-        "Deslize totalmente para a direita para confirmar ou use a ação de ativar",
-      sliderText: "DESLIZE PARA DISPARAR",
-      cancelButton: "Cancelar & Voltar",
-      accessibilityConfirmLabel: "Confirmar alerta",
-      accessibilityConfirmHint: "Ativa imediatamente o protocolo de emergência",
-    },
     alertScreen: {
       subtitle: "PROTOCOLO CRÍTICO",
       title: "EVACUAÇÃO",

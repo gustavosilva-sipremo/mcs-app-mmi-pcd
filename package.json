@@ -23,7 +23,8 @@
     "web": "expo start --web",
     "lint": "eslint .",
     "build:android": "eas build --platform android",
-    "build:ios": "eas build --platform ios"
+    "build:ios": "eas build --platform ios",
+    "push:test": "node scripts/send-expo-test-push.mjs"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

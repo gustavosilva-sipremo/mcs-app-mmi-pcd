@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "90038949655",
+    "project_id": "pcd-msg-push",
+    "storage_bucket": "pcd-msg-push.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:90038949655:android:17b2f3d75cb1702f2f8952",
+        "android_client_info": {
+          "package_name": "com.mmi.mineradora.emergencia"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCHnP1js348AIaWKWRvTD71Na7Crw39QHs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

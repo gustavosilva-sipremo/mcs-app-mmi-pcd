@@ -22,13 +22,16 @@
         "usesNonExemptEncryption": false
       },
       "infoPlist": {
-        "UIBackgroundModes": ["audio"],
+        "UIBackgroundModes": [
+          "audio"
+        ],
         "NSCameraUsageDescription": "O app utiliza o flash da câmera para sinalização visual de emergência e iluminação em áreas de baixa visibilidade (subsolo).",
         "NSMicrophoneUsageDescription": "Necessário para processamento de áudio durante protocolos de pânico."
       }
     },
     "android": {
       "package": "com.mmi.mineradora.emergencia",
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./src/assets/images/icons/adaptive-icon.png",
         "backgroundColor": "#F8FAFC"
@@ -39,7 +42,11 @@
         "BATTERY_STATS",
         "WAKE_LOCK",
         "FOREGROUND_SERVICE",
-        "MODIFY_AUDIO_SETTINGS"
+        "MODIFY_AUDIO_SETTINGS",
+        "POST_NOTIFICATIONS",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
       ]
     },
     "plugins": [
@@ -56,15 +63,25 @@
         {
           "appleTeamId": "YOUR_TEAM_ID"
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./src/assets/images/icons/icon.png",
+          "color": "#D32F2F",
+          "defaultChannel": "emergency"
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true
     },
     "extra": {
+      "router": {},
       "eas": {
-        "projectId": "seu-id-aqui"
+        "projectId": "f3e57e0b-c1e9-4ee1-a7b5-569e24e8d0e7"
       }
-    }
+    },
+    "owner": "gustavo.sipremo"
   }
 }

@@ -10,22 +10,21 @@ export type EmergencyAlertData = {
 export const emergencyCopy = {
   ptBR: {
     acionamento: {
-      titlePrefix: "Confirmacao de",
+      titlePrefix: "Confirmação de",
       titleHighlight: "Alerta",
       description:
-        "Deslize o botao para ativar o protocolo de evacuacao imediata.",
+        "Deslize o botão para ativar o protocolo de evacuação imediata.",
       sliderLabel: "Deslizar para disparar alerta",
       sliderHint:
-        "Deslize totalmente para a direita para confirmar ou use a acao de ativar",
+        "Deslize totalmente para a direita para confirmar ou use a ação de ativar",
       sliderText: "DESLIZE PARA DISPARAR",
       cancelButton: "Cancelar & Voltar",
       accessibilityConfirmLabel: "Confirmar alerta",
-      accessibilityConfirmHint:
-        "Ativa imediatamente o protocolo de emergencia",
+      accessibilityConfirmHint: "Ativa imediatamente o protocolo de emergência",
     },
     alertScreen: {
-      subtitle: "PROTOCOLO CRITICO",
-      title: "EVACUACAO",
+      subtitle: "PROTOCOLO CRÍTICO",
+      title: "EVACUAÇÃO",
       badge: "ALERTA ATIVO",
       openProtocolButton: "ABRIR PROTOCOLO",
     },
@@ -43,12 +42,12 @@ export const emergencyCopy = {
 
 export const defaultEmergencyAlert: EmergencyAlertData = {
   level: "Nivel 3",
-  structure: "B1 Ipe",
+  structure: "B1 Ipê",
   title: "Ruptura da Barragem",
-  message: `Alerta de Emergencia Nivel 3.
-Ruptura da barragem B1 Ipe Mina. Iminente ou ocorrendo.
-Dar inicio as Acoes de Emergencia em Nivel 3.
-Providenciar os recursos necessarios para atendimento.`,
+  message: `Alerta de Emergência Nível 3.
+Ruptura da barragem B1 Ipê Mina. Iminente ou ocorrendo.
+Dar inicio as Ações de Emergência em Nível 3.
+Providenciar os recursos necessários para atendimento.`,
 };
 
 export function buildEmergencySpeechText(alertData: EmergencyAlertData) {
